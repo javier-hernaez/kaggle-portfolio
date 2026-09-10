@@ -7,6 +7,7 @@ scikit-learn>=1.4.0
 # Gradient Boosting
 lightgbm>=4.3.0
 catboost>=1.2.0
+xgboost>=2.0.0
 
 # Visualization
 matplotlib>=3.8.0

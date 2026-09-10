@@ -5,8 +5,9 @@
 [![Scikit-Learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 [![LightGBM](https://img.shields.io/badge/LightGBM-Microsoft-green?style=for-the-badge)](https://lightgbm.readthedocs.io/)
 [![CatBoost](https://img.shields.io/badge/CatBoost-Yandex-yellow?style=for-the-badge)](https://catboost.ai/)
+[![XGBoost](https://img.shields.io/badge/XGBoost-DMLC-red?style=for-the-badge)](https://xgboost.readthedocs.io/)
 
-Repositorio con soluciones, ingeniería de variables y modelos de Machine Learning desarrollados para competiciones de **Kaggle**. Cada carpeta contiene código modular, reproducible y documentado.
+Repositório con soluciones, ingeniería de variables y modelos de Machine Learning desarrollados para competiciones de **Kaggle**. Cada carpeta contiene código modular, reproducible y documentado.
 
 ---
 
@@ -17,6 +18,7 @@ Repositorio con soluciones, ingeniería de variables y modelos de Machine Learni
 | 01 | [**Titanic: Machine Learning from Disaster**](01_titanic/) | Clasificación Binaria | Woman-Child-Group (WCG) | Accuracy | **`0.81578`** | **#246 / 9.639 (Top 2.5%)** | ✅ Completada |
 | 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | Ensemble (LightGBM + CatBoost) | Accuracy | **`0.80500`** | **#473 / 1.536** | ✅ Completada |
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | Blend (Ridge + Lasso + CB + LGB) | RMSLE | **`0.12589`** | **#943 / 3.178** | ✅ Completada |
+| 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | Blend (LGBM + CatBoost + XGBoost) | ROC-AUC | **`0.94151`** | **#1005 / 1.472** | 🚀 En competición |
 
 ---
 
@@ -27,7 +29,7 @@ Repositorio con soluciones, ingeniería de variables y modelos de Machine Learni
 * **Visualización:** `matplotlib`, `seaborn`
 * **Algoritmos de Machine Learning:**
   * Árboles y ensambles: `RandomForestClassifier`, `VotingClassifier` (`scikit-learn`)
-  * Gradient Boosting: `LightGBM` (Microsoft), `CatBoost` (Yandex)
+  * Gradient Boosting: `LightGBM` (Microsoft), `CatBoost` (Yandex), `XGBoost` (DMLC)
 * **Validación y Métricas:** Validación cruzada estratificada de 5 folds (*Stratified K-Fold CV*)
 * **Gestión de envíos:** Kaggle API CLI
 
@@ -68,16 +70,23 @@ kaggle-portfolio/
 ├── 01_titanic/                     # Proyecto Titanic (Score: 0.81578 - Top 2.5%)
 │   ├── README.md                   # Documentación técnica del modelo WCG
 │   ├── download_data.py            # Descarga de datos
-│   ├── data/                       # Archivos train/test
-│   ├── notebooks/                  # Análisis exploratorio (EDA)
-│   ├── src/                        # Código fuente de los modelos
-│   │   ├── baseline_model.py
-│   │   ├── advanced_model.py
-│   │   └── wcg_model.py            # Modelo campeón
-│   └── submissions/                # Historial de archivos de envío
+│   └── src/                        # Código fuente de los modelos
 │
-└── 02_spaceship_titanic/           # Proyecto Spaceship Titanic
-    └── README.md
+├── 02_spaceship_titanic/           # Proyecto Spaceship Titanic (Score: 0.80500)
+│   ├── README.md
+│   └── src/model.py                # Ensamble LightGBM + CatBoost
+│
+├── 03_house_prices/                # Proyecto House Prices (Score: 0.12589)
+│   ├── README.md
+│   └── src/model.py                # Stacking / Blending Regresores
+│
+└── 04_predicting_ev_purchases/     # Proyecto Playground s6e9: EV Purchases
+    ├── README.md                   # Documentación y análisis de función generadora
+    ├── download_data.py            # Descarga de datos
+    └── src/
+        ├── eda.py                  # Análisis exploratorio y correlaciones
+        ├── features.py             # Feature engineering & DGP Probit
+        └── model.py                # Ensamble 5-Fold LGBM + CatBoost + XGBoost
 ```
 
 ---
