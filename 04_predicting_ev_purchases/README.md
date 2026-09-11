@@ -64,27 +64,30 @@ Donde $\Phi(\cdot)$ representa la función de distribución acumulada de la norm
 ## ⚙️ Modelado y Validación Cruzada (`model.py`)
 
 * **Estrategia de Validación:** 5-Fold Stratified Cross-Validation (`StratifiedKFold(n_splits=5, shuffle=True)`).
-* **Modelos Base:**
-  * **LightGBM Classifier:** 400 estimadores, profundidad 6, submuestreo de características y filas.
-  * **CatBoost Classifier:** 400 iteraciones con optimización para ROC-AUC.
-  * **XGBoost Classifier:** 400 árboles con regularización y early stopping.
-* **Ensamble:** Fusión ponderada de probabilidades Out-Of-Fold (OOF) y promediado de predicciones sobre el conjunto de test (test fold bagging).
+* **Ingeniería de Características Grandmaster (118 Features):**
+  * Medias objetivo extraídas del dataset original de Kaggle (`EV_Adoption_and_Range_Anxiety_Dataset.csv`).
+  * Descomposición de dígitos sintéticos en base 10 ($10^{-4}$ a $10^{3}$) para variables numéricas.
+  * Zonas de quiebre estadístico: `is_millionaire_cliff` ($\ge 170.537$), `is_dead_zone` ($38k-42k$), `is_30k_spike`.
+  * In-Fold Triple Target Encoding (`smooth='auto', 10, 100`) para 11 columnas clave.
+* **Modelos de Ultra-Alta Resolución:**
+  * **LightGBM Classifier:** `max_bin=1024`, `num_leaves=32`, `colsample_bytree=0.3`, `learning_rate=0.03`.
+  * **XGBoost Classifier (Hist):** `max_bin=1024`, `max_depth=6`, `colsample_bytree=0.3`, `learning_rate=0.03`.
+* **Ensamble:** Percentile Rank Averaging y test-fold bagging entre 10 modelos (5 folds $\times$ 2 modelos).
 
 ### 🏆 Resultados de Validación Cruzada (OOF ROC-AUC)
 
-| Modelo | Métrica | OOF ROC-AUC | Peso en Ensamble |
-| :--- | :---: | :---: | :---: |
-| **LightGBM** | ROC-AUC | `0.941027` | 0.10 |
-| **CatBoost** | ROC-AUC | `0.941551` | 0.30 |
-| **XGBoost** | ROC-AUC | `0.941768` | 0.60 |
-| **Ensemble (Blend OOF)** | **ROC-AUC** | **`0.941828`** | **1.00** |
+| Modelo | Métrica | OOF ROC-AUC | Peso Óptimo | Score Público Kaggle |
+| :--- | :---: | :---: | :---: | :---: |
+| **High-Res LightGBM** | ROC-AUC | `0.944818` | 0.65 | - |
+| **High-Res XGBoost** | ROC-AUC | `0.944760` | 0.35 | - |
+| **⭐ Super-Ensemble v3 (Grandmaster)** | **ROC-AUC** | **`0.944848`** | **1.00** | **`0.94470` (#589 / 1.583)** |
 
-*Rendimiento por Fold del Ensamble:*
-* Fold 1: `0.940423`
-* Fold 2: `0.941489`
-* Fold 3: `0.942590`
-* Fold 4: `0.942127`
-* Fold 5: `0.941771`
+*Rendimiento por Fold del Super-Ensamble v3:*
+* Fold 1: `0.943758`
+* Fold 2: `0.944600`
+* Fold 3: `0.945606`
+* Fold 4: `0.945278`
+* Fold 5: `0.944972`
 
 ---
 

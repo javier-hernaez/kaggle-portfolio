@@ -18,7 +18,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 01 | [**Titanic: Machine Learning from Disaster**](01_titanic/) | Clasificación Binaria | Woman-Child-Group (WCG) | Accuracy | **`0.81578`** | **#246 / 9.639 (Top 2.5%)** | ✅ Completada |
 | 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | Ensemble (LightGBM + CatBoost) | Accuracy | **`0.80500`** | **#473 / 1.536** | ✅ Completada |
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | Blend (Ridge + Lasso + CB + LGB) | RMSLE | **`0.12589`** | **#943 / 3.178** | ✅ Completada |
-| 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | Blend (LGBM + CatBoost + XGBoost) | ROC-AUC | **`0.94151`** | **#1005 / 1.472** | 🚀 En competición |
+| 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | Super-Ensemble v3 (Orig Means + Digit Decomp + High-Res) | ROC-AUC | **`0.94470`** | **#589 / 1.583** (Top 37%) | 🚀 En competición |
 
 ---
 
