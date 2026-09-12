@@ -19,6 +19,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | Ensemble (LightGBM + CatBoost) | Accuracy | **`0.80500`** | **#473 / 1.536** | ✅ Completada |
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | Blend (Ridge + Lasso + CB + LGB) | RMSLE | **`0.12589`** | **#943 / 3.178** | ✅ Completada |
 | 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | Super-Ensemble v3 (Orig Means + Digit Decomp + High-Res) | ROC-AUC | **`0.94470`** | **#589 / 1.583** (Top 37%) | 🚀 En competición |
+| 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | Ensamble (LR + Ridge + Threshold Opt) | F1-Score | **`0.77196` (CV)** | En progreso | 🚀 En competición |
 
 ---
 
@@ -87,6 +88,17 @@ kaggle-portfolio/
         ├── eda.py                  # Análisis exploratorio y correlaciones
         ├── features.py             # Feature engineering & DGP Probit
         └── model.py                # Ensamble 5-Fold LGBM + CatBoost + XGBoost
+│
+└── 05_disaster_tweets/             # Proyecto NLP: Clasificación de Tweets de Desastre
+    ├── README.md                   # Documentación y análisis estilométrico
+    ├── download_data.py            # Descarga de datos
+    └── src/
+        ├── eda.py                  # Análisis exploratorio y keywords
+        ├── text_cleaner.py         # Limpieza, entidades HTML y mojibake
+        ├── features.py             # TF-IDF (palabras + caracteres) y meta-features
+        ├── evaluate.py             # Optimización de umbral de F1-Score
+        ├── baseline_model.py       # 5-Fold CV (LR + Calibrated Ridge)
+        └── train_transformer_kaggle.py # Pipeline GPU DeBERTa-v3
 ```
 
 ---
