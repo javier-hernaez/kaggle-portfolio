@@ -19,7 +19,8 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | Ensemble (LightGBM + CatBoost) | Accuracy | **`0.80500`** | **#473 / 1.536** | ✅ Completada |
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | Blend (Ridge + Lasso + CB + LGB) | RMSLE | **`0.12589`** | **#943 / 3.178** | ✅ Completada |
 | 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | Super-Ensemble v3 (Orig Means + Digit Decomp + High-Res) | ROC-AUC | **`0.94470`** | **#589 / 1.583** (Top 37%) | 🚀 En competición |
-| 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | Ensamble (LR + Ridge + Threshold Opt) | F1-Score | **`0.77196` (CV)** | En progreso | 🚀 En competición |
+| 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | Ensamble (LR + Ridge + Threshold Opt) | F1-Score | **`0.81336`** | **#214 / 469** | 🚀 En competición |
+| 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Industrial Strategic Agent v2 (Livestock + Fertilizer + Sliced Sales) | Winrate / Coins | **100% WR vs v1 (\$31k - \$65k media)** | *Leaderboard Activo* | 🚀 En competición |
 
 ---
 
@@ -99,6 +100,18 @@ kaggle-portfolio/
         ├── evaluate.py             # Optimización de umbral de F1-Score
         ├── baseline_model.py       # 5-Fold CV (LR + Calibrated Ridge)
         └── train_transformer_kaggle.py # Pipeline GPU DeBERTa-v3
+│
+└── 06_kaggriculture/               # Simulación y Estrategia Económica de Granjas
+    ├── README.md                   # Documentación del juego, economía y heurísticas
+    ├── main.py                     # Agente autónomo para envío a Kaggle
+    ├── evaluate.py                 # Benchmark de simulación 720 turnos vs baselines
+    ├── submit.py                   # Script de validación y subida a Kaggle API
+    ├── simulator/                  # Motor de simulación puro (zero dependencies)
+    │   ├── engine.py               # Lógica de juego, mercado y turnos
+    │   └── battle.py               # Torneos y métricas de victoria
+    └── src/
+        ├── heuristic_agent.py      # Agente estratégico (rotación, cuadrantes, jornaleros)
+        └── starter_baseline.py     # Agente baseline oficial de Kaggle
 ```
 
 ---

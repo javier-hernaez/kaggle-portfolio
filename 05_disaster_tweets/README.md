@@ -80,6 +80,10 @@ El conjunto de datos cuenta con **7.613 tweets de entrenamiento** y **3.263 de p
 > **Ganancia por Optimización de Umbral:**
 > Al desplazar el punto de corte de `0.50` a `0.435 - 0.450`, el modelo compensa el coste asimétrico de los falsos negativos en la métrica F1, logrando una mejora de **+0.007 F1** sin requerir modelos más pesados.
 
+### 🎯 Puntuación Oficial en Kaggle (Public Leaderboard)
+* **Score Público (F1-Score):** **`0.81336`**
+* **Posición Inicial:** **#214 / 469** (Top 45%) con el modelo Baseline TF-IDF + Calibrated Ensemble.
+
 ---
 
 ## 🚀 Próximo Nivel: Transformers con GPU (`train_transformer_kaggle.py`)
