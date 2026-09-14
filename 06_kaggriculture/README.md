@@ -13,10 +13,10 @@ Solución y arquitectura de agente estratégico para la competición oficial de 
 
 | Enfrentamiento | Partidas | Victorias Agente | Victorias Rival | Tasa de Victoria | Monedas Medias Agente | Monedas Medias Rival | Margen Medio |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **IndustrialAgent v2 vs Heuristic v1** | 6 | **6** | 0 | **100.0%** | **\$31,457** | \$8,562 | **+\$22,895** |
-| **IndustrialAgent v2 (Solo Peak)** | - | - | - | - | **\$55,000 - \$65,000+** | - | - |
+| **IndustrialAgent v3 vs Industrial v2** | 6 | **6** | 0 | **100.0%** | **\$56,066** | \$23,305 | **+\$32,761** |
+| **IndustrialAgent v3 vs Heuristic v1** | 6 | **6** | 0 | **100.0%** | **\$59,673** | \$6,552 | **+\$53,121** |
+| **IndustrialAgent v2 vs Heuristic v1** | 6 | **6** | 0 | **100.0%** | **\$31,457** | \$8,562 | +\$22,895 |
 | **HeuristicAgent v1 vs Starter Baseline** | 6 | **6** | 0 | **100.0%** | **\$5,311** | \$3,321 | +\$1,990 |
-| **HeuristicAgent v1 vs Random Agent** | 4 | **4** | 0 | **100.0%** | **\$7,746** | \$0 | +\$7,746 |
 
 ---
 

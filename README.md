@@ -20,7 +20,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | Blend (Ridge + Lasso + CB + LGB) | RMSLE | **`0.12589`** | **#943 / 3.178** | ✅ Completada |
 | 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | Super-Ensemble v3 (Orig Means + Digit Decomp + High-Res) | ROC-AUC | **`0.94470`** | **#589 / 1.583** (Top 37%) | 🚀 En competición |
 | 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | Ensamble (LR + Ridge + Threshold Opt) | F1-Score | **`0.81336`** | **#214 / 469** | 🚀 En competición |
-| 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Industrial Strategic Agent v2 (Livestock + Fertilizer + Sliced Sales) | Winrate / Coins | **100% WR vs v1 (\$31k - \$65k media)** | *Leaderboard Activo* | 🚀 En competición |
+| 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Industrial Strategic Agent v3 (Wheat Reserve Fix + Sheep Diversification + Anti-Crash) | Winrate / Coins | **100% WR vs v2 (\$56k - \$66k media)** | *Leaderboard Activo* | 🚀 En competición |
 
 ---
 
