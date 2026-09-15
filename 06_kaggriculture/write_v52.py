@@ -1,18 +1,30 @@
-"""
-Champion Agent v6 (Grandmaster Squad Specialization Edition).
-Directly addresses the 3 bottlenecks identified from replay simulation:
-1. Animal Logistics & Guaranteed Feeding:
-   - Dedicated Husbandry Workers always load wheat at shed BEFORE visiting animals.
-   - Every animal is reliably FED and CARED every day.
-   - Unlocks full production of MILK, WOOL, and 1,500+ FERTILIZER.
-2. Zero Traffic Jam Shed Coordination:
-   - Single-unit mutex on shed animal pickups (no more 6-worker deadlocks).
-3. Agricultural Squad (Mass Strawberry Engine):
-   - Dedicated planters & waterers plant 35-42 Strawberries.
-   - Perennial strawberries yield continuously every 2 days.
-4. Coordinated Sliced Market Sales:
-   - Sells fertilizer (up to 10/turn), milk, wool, strawberries every turn.
-"""
+﻿code = """\"\"\"
+Champion Agent v5.2 (Majkel1337 Master Replica).
+Based on exact reverse engineering of the #1 World Champion (Elo 3285.3, 118k coins):
+
+1. CLUSTERED PASTURES AROUND SHED (4, 4):
+   - Day 0 NW 4: (4,4), (3,4), (4,3), (3,3)
+   - NE additions: (5,4), (5,3), (4,2), (5,2), (6,4), (6,3), (7,4)
+   - SW additions: (2,4), (3,5), (4,5)
+   Total: 14 Pastures (10 Cows, 4 Sheep).
+2. FLUID ANIMAL PIPELINE:
+   - Worker picks up animal from shed, walks to spot, builds pasture, places animal in 3 turns.
+   - Zero deadlock: pickup allowed if shed has animal and target spots remain.
+3. SELLING FIRST IN MARKET:
+   - Sells fertilizer (10/turn), milk (5), wool (4), strawberries (6), melons (5) every turn.
+4. DAILY LABOR RE-HIRE:
+   - Re-hire 5 hands Days 0-6, 8-10 hands Days 7-10, 12 hands Days 11-28.
+5. CROP PROGRESSION:
+   - Days 0-4: 12 Melons + Wheat.
+   - Days 5-11: 42 Strawberries (monoculture engine).
+   - Days 12+: Wheat maintenance for feed.
+6. LAND EXPANSION:
+   - Day 6: NE ($1,000)
+   - Day 11: SW ($2,000)
+   - Stop at 3 quadrants (75 tiles).
+7. ENDGAME DROP (Step 714-720):
+   - Clear inventory at shed; sell 100% of goods.
+\"\"\"
 
 CROPS = {
     "WHEAT":      {"seed": 10,  "first_yield_day": 2,  "max_yield_day": 4,  "interval": 0, "ongoing": False},
@@ -77,7 +89,7 @@ def _get_quadrant(x, y, board_size=10):
     return ("N" if y < half else "S") + ("W" if x < half else "E")
 
 
-class GrandmasterAgentV6:
+class ChampionAgentV52:
     def __init__(self):
         pass
 
@@ -107,7 +119,7 @@ class GrandmasterAgentV6:
                 return "WHEAT"
             return None
             
-        # Phase 3: Days 12-25 -> Wheat for animal feed
+        # Phase 3: Days 12-25 -> Wheat for animal feed / maintenance
         if 12 <= day <= 25:
             if money >= CROPS["WHEAT"]["seed"]:
                 return "WHEAT"
@@ -121,7 +133,7 @@ class GrandmasterAgentV6:
                 return "WHEAT"
         return None
 
-    def plan_unit_turn(self, unit_idx, unit_pos, role, farm, private, day, hour, step, claimed_tiles, shared_state):
+    def plan_unit(self, unit_idx, unit_pos, farm, private, day, hour, step, claimed_tiles, strawberry_count):
         ux, uy = unit_pos
         board_size = len(farm["tiles"])
         tile = farm["tiles"][uy][ux]
@@ -130,24 +142,24 @@ class GrandmasterAgentV6:
         seeds = private.get("seeds", {})
         remaining_steps = 720 - step
         remaining_days = 30 - day
-        is_endgame = (day >= 29 and hour >= 16) or (remaining_steps <= 18)
+        is_endgame = remaining_steps <= 18 or (day == 29 and hour >= 18)
         unlocked = set(farm.get("unlocked_quadrants", ["NW"]))
 
         carrying_cow = inv.get("COW", 0) > 0
         carrying_sheep = inv.get("SHEEP", 0) > 0
         carrying_animal = carrying_cow or carrying_sheep
-        carrying_sellable = sum(inv.get(k, 0) for k in ["MILK", "WOOL", "STRAWBERRY", "MELON", "CARROT", "FERTILIZER", "WHEAT", "EGG"]) > 0
+        carrying_sellable = sum(inv.get(k, 0) for k in ["MILK", "WOOL", "STRAWBERRY", "MELON", "CARROT", "FERTILIZER", "WHEAT", "EGG", "TOMATO"]) > 0
 
-        # --- 0. ENDGAME DROP: Rush to shed and deposit ---
+        # --- 0. ENDGAME: Rush to shed and DROP everything ---
         if is_endgame and (carrying_sellable or carrying_animal):
             if (ux, uy) in SHED_ADJACENT:
                 return ["DROP"], (ux, uy)
             d = _find_step((ux, uy), SHED_CENTER, board_size)
             return ([d] if d else ["PASS"]), SHED_CENTER
 
-        # --- 1. CURRENT TILE ACTIONS ---
+        # --- 1. Current Tile Interactions ---
         if isinstance(tile, dict):
-            # Animal tile
+            # Animal tile: harvest yield, collect fertilizer, feed and care
             if "animal" in tile:
                 if tile.get("yield_units", 0) > 0:
                     return ["HARVEST"], (ux, uy)
@@ -158,19 +170,20 @@ class GrandmasterAgentV6:
                 if not tile.get("cared_today", False):
                     return ["CARE"], (ux, uy)
 
-            # Empty Pasture tile
+            # Empty Pasture: place animal if holding one
             if tile.get("kind") == "PASTURE" and "animal" not in tile and carrying_animal:
                 if carrying_cow:
                     return ["PLACE", "COW"], (ux, uy)
                 if carrying_sheep:
                     return ["PLACE", "SHEEP"], (ux, uy)
 
-            # Plant tile
+            # Plant tile: harvest, fertilize melons, water
             if tile.get("kind") == "PLANT":
                 crop = tile.get("crop", "")
                 age = day - tile.get("planted_day", 0)
                 c_data = CROPS.get(crop, {})
                 peak = age >= c_data.get("max_yield_day", 99)
+                
                 if (peak or is_endgame) and tile.get("yield_units", 0) > 0:
                     return ["HARVEST"], (ux, uy)
                 if crop == "MELON" and inv.get("FERTILIZER", 0) > 0 and tile.get("fertilized_until_day", -1) < day:
@@ -182,15 +195,16 @@ class GrandmasterAgentV6:
             if tile.get("kind") == "WEED":
                 return ["DIG"], (ux, uy)
 
-        # Empty pasture spot: build pasture if holding animal or builder role
+        # Empty pasture tile spot: build pasture if holding animal or animal in shed
+        animals_in_shed = shed.get("COW", 0) + shed.get("SHEEP", 0)
         if (ux, uy) in PASTURE_LOCATIONS and _get_quadrant(ux, uy, board_size) in unlocked:
-            if tile is None and (carrying_animal or role == "HUSBANDRY"):
+            if tile is None and (carrying_animal or animals_in_shed > 0):
                 return ["BUILD_PASTURE"], (ux, uy)
 
-        # Plant on empty ground (AGRICULTURE role)
+        # Plant seed on empty ground (not in pasture locations)
         if tile is None and (ux, uy) not in claimed_tiles and (ux, uy) not in PASTURE_LOCATIONS:
             if _get_quadrant(ux, uy, board_size) in unlocked:
-                best_crop = self.select_crop(day, remaining_days, farm["money"], shared_state.get("strawberries", 0))
+                best_crop = self.select_crop(day, remaining_days, farm["money"], strawberry_count)
                 if best_crop and seeds.get(best_crop, 0) > 0:
                     claimed_tiles.add((ux, uy))
                     return ["PLANT", best_crop], (ux, uy)
@@ -199,142 +213,112 @@ class GrandmasterAgentV6:
                         claimed_tiles.add((ux, uy))
                         return ["PLANT", alt_crop], (ux, uy)
 
-        # --- 2. SHED PICKUP & DROP (When Adjacent) ---
-        if (ux, uy) in SHED_ADJACENT:
-            # Drop off goods if carrying heavy load
-            if inv.get("FERTILIZER", 0) >= 4 or inv.get("MILK", 0) >= 3 or inv.get("WOOL", 0) >= 2 or inv.get("STRAWBERRY", 0) >= 4:
-                return ["DROP"], (ux, uy)
-
-            # HUSBANDRY ROLE: Pickup Animal or Wheat
-            if role == "HUSBANDRY" and not carrying_animal:
-                # Pickup animal if mutex available and animal in shed
-                if not shared_state["animal_pickup_claimed"]:
-                    # Check if empty pasture spot exists
-                    for px, py in PASTURE_LOCATIONS:
-                        if _get_quadrant(px, py, board_size) in unlocked:
-                            pt = farm["tiles"][py][px]
-                            if pt is None or (isinstance(pt, dict) and pt.get("kind") == "PASTURE" and "animal" not in pt):
-                                if shed.get("COW", 0) > 0:
-                                    shared_state["animal_pickup_claimed"] = True
-                                    return ["PICKUP", "COW", 1], (ux, uy)
-                                if shed.get("SHEEP", 0) > 0:
-                                    shared_state["animal_pickup_claimed"] = True
-                                    return ["PICKUP", "SHEEP", 1], (ux, uy)
-
-                # Pickup Wheat for unfed animals
-                has_unfed = any(
-                    isinstance(farm["tiles"][y][x], dict)
-                    and "animal" in farm["tiles"][y][x]
-                    and not farm["tiles"][y][x].get("fed_today", False)
-                    for y in range(board_size) for x in range(board_size)
-                )
-                if has_unfed and shed.get("WHEAT", 0) > 0 and inv.get("WHEAT", 0) == 0:
-                    take_amt = min(4, shed.get("WHEAT", 0))
-                    return ["PICKUP", "WHEAT", take_amt], (ux, uy)
-
-        # --- 3. TARGET SELECTION BY ROLE ---
-        best_target = None
-        best_prio = -1
-        best_dist = 9999
-
-        # A) HUSBANDRY ROLE TARGETS
-        if role == "HUSBANDRY":
-            # If carrying animal -> go to nearest unpopulated pasture spot
-            if carrying_animal:
-                for px, py in PASTURE_LOCATIONS:
-                    if _get_quadrant(px, py, board_size) in unlocked:
-                        pt = farm["tiles"][py][px]
-                        if pt is None or (isinstance(pt, dict) and pt.get("kind") == "PASTURE" and "animal" not in pt):
-                            d = _dist((ux, uy), (px, py))
-                            if d < best_dist:
-                                best_dist = d
-                                best_target = (px, py)
-                if best_target:
-                    step_dir = _find_step((ux, uy), best_target, board_size)
-                    if step_dir:
-                        return [step_dir], best_target
-
-            # If needs wheat -> walk directly to SHED!
-            has_unfed = any(
+        # --- 2. Shed Pickup when adjacent ---
+        if (ux, uy) in SHED_ADJACENT and not carrying_animal:
+            # Priority A: Pick up animal from shed if any unpopulated pasture exists OR can be built
+            unpopulated_pastures = any(
+                _get_quadrant(px, py, board_size) in unlocked
+                and (farm["tiles"][py][px] is None or (isinstance(farm["tiles"][py][px], dict) and farm["tiles"][py][px].get("kind") == "PASTURE" and "animal" not in farm["tiles"][py][px]))
+                for px, py in PASTURE_LOCATIONS
+            )
+            if unpopulated_pastures:
+                if shed.get("COW", 0) > 0:
+                    return ["PICKUP", "COW", 1], (ux, uy)
+                if shed.get("SHEEP", 0) > 0:
+                    return ["PICKUP", "SHEEP", 1], (ux, uy)
+            
+            # Priority B: Pick up wheat to feed hungry animals on board
+            has_unfed_animals = any(
                 isinstance(farm["tiles"][y][x], dict)
                 and "animal" in farm["tiles"][y][x]
                 and not farm["tiles"][y][x].get("fed_today", False)
                 for y in range(board_size) for x in range(board_size)
             )
-            if has_unfed and inv.get("WHEAT", 0) == 0 and shed.get("WHEAT", 0) > 0:
-                step_to_shed = _find_step((ux, uy), SHED_CENTER, board_size)
-                if step_to_shed:
-                    return [step_to_shed], SHED_CENTER
+            if has_unfed_animals and shed.get("WHEAT", 0) > 0 and inv.get("WHEAT", 0) == 0:
+                return ["PICKUP", "WHEAT", 2], (ux, uy)
+                
+            # Priority C: Pick up fertilizer for melons
+            if shed.get("FERTILIZER", 0) > 0 and inv.get("FERTILIZER", 0) == 0:
+                has_unfert_melons = any(
+                    isinstance(farm["tiles"][y][x], dict)
+                    and farm["tiles"][y][x].get("kind") == "PLANT"
+                    and farm["tiles"][y][x].get("crop") == "MELON"
+                    and farm["tiles"][y][x].get("fertilized_until_day", -1) < day
+                    for y in range(board_size) for x in range(board_size)
+                )
+                if has_unfert_melons:
+                    return ["PICKUP", "FERTILIZER", 2], (ux, uy)
 
-            # Visit animals that need feeding, care, or harvest
-            for y in range(board_size):
-                for x in range(board_size):
-                    t = farm["tiles"][y][x]
-                    if isinstance(t, dict) and "animal" in t:
-                        if (x, y) in claimed_tiles:
-                            continue
-                        prio = -1
+        # --- 3. Pathfinding to best target ---
+        best_target = None
+        best_prio = -1
+        best_dist = 9999
+
+        for y in range(board_size):
+            for x in range(board_size):
+                if (x, y) in claimed_tiles:
+                    continue
+                q = _get_quadrant(x, y, board_size)
+                if q not in unlocked:
+                    continue
+                t = farm["tiles"][y][x]
+                if t == "LOCKED":
+                    continue
+
+                dist = _dist((ux, uy), (x, y))
+                prio = -1
+
+                if isinstance(t, dict):
+                    if "animal" in t:
                         if t.get("yield_units", 0) > 0:
                             prio = 10
                         elif t.get("fertilizer_available", False):
                             prio = 9
-                        elif not t.get("fed_today", False) and inv.get("WHEAT", 0) > 0:
+                        elif not t.get("fed_today", False):
                             prio = 8
                         elif not t.get("cared_today", False):
                             prio = 7
-
-                        if prio > 0:
-                            d = _dist((ux, uy), (x, y))
-                            if prio > best_prio or (prio == best_prio and d < best_dist):
-                                best_prio = prio
-                                best_dist = d
-                                best_target = (x, y)
-
-            if best_target:
-                claimed_tiles.add(best_target)
-                step_dir = _find_step((ux, uy), best_target, board_size)
-                if step_dir:
-                    return [step_dir], best_target
-
-        # B) AGRICULTURE ROLE TARGETS
-        else:
-            # 1. Harvest mature crops
-            for y in range(board_size):
-                for x in range(board_size):
-                    if (x, y) in claimed_tiles:
-                        continue
-                    q = _get_quadrant(x, y, board_size)
-                    if q not in unlocked:
-                        continue
-                    t = farm["tiles"][y][x]
-                    if t == "LOCKED":
-                        continue
-
-                    d = _dist((ux, uy), (x, y))
-                    prio = -1
-
-                    if isinstance(t, dict) and t.get("kind") == "PLANT":
-                        c_data = CROPS.get(t["crop"], {})
-                        age = day - t["planted_day"]
-                        if (age >= c_data["max_yield_day"] or is_endgame) and t.get("yield_units", 0) > 0:
-                            prio = 10
+                    elif t.get("kind") == "PASTURE" and "animal" not in t and carrying_animal:
+                        prio = 12
+                    elif t.get("kind") == "PLANT":
+                        crop = t.get("crop", "")
+                        age = day - t.get("planted_day", 0)
+                        c_data = CROPS.get(crop, {})
+                        peak = age >= c_data.get("max_yield_day", 99)
+                        if (peak or is_endgame) and t.get("yield_units", 0) > 0:
+                            prio = 6
                         elif not t.get("watered_today", False):
-                            prio = 8
-                    elif t is None and (x, y) not in PASTURE_LOCATIONS and remaining_days > 1:
-                        prio = 5
-                    elif isinstance(t, dict) and t.get("kind") == "WEED":
+                            prio = 5
+                        elif crop == "MELON" and inv.get("FERTILIZER", 0) > 0:
+                            prio = 4
+                    elif t.get("kind") == "WEED":
                         prio = 2
+                elif t is None:
+                    if (x, y) in PASTURE_LOCATIONS:
+                        if carrying_animal:
+                            prio = 11
+                        elif animals_in_shed > 0:
+                            prio = 4
+                    elif (x, y) not in PASTURE_LOCATIONS and remaining_days > 1:
+                        prio = 3
 
-                    if prio > best_prio or (prio == best_prio and d < best_dist):
-                        best_prio = prio
-                        best_dist = d
-                        best_target = (x, y)
+                # Move towards shed if useful
+                if (x, y) in SHED_ADJACENT and not carrying_animal:
+                    if animals_in_shed > 0:
+                        prio = max(prio, 8)
+                    elif shed.get("WHEAT", 0) > 0 and inv.get("WHEAT", 0) == 0:
+                        prio = max(prio, 6)
 
-            if best_target:
+                if prio > best_prio or (prio == best_prio and dist < best_dist):
+                    best_prio = prio
+                    best_dist = dist
+                    best_target = (x, y)
+
+        if best_target and best_target != (ux, uy):
+            step_dir = _find_step((ux, uy), best_target, board_size)
+            if step_dir:
                 claimed_tiles.add(best_target)
-                step_dir = _find_step((ux, uy), best_target, board_size)
-                if step_dir:
-                    return [step_dir], best_target
+                return [step_dir], best_target
 
         return ["PASS"], (ux, uy)
 
@@ -353,6 +337,7 @@ class GrandmasterAgentV6:
         shed = private.get("shed", {})
         seeds = private.get("seeds", {})
         unlocked = farm.get("unlocked_quadrants", ["NW"])
+        hires_today = farm.get("hires_today", 0)
 
         market_orders = []
 
@@ -362,10 +347,10 @@ class GrandmasterAgentV6:
         animals_in_shed = shed.get("COW", 0) + shed.get("SHEEP", 0)
         strawberry_count = sum(1 for row in farm["tiles"] for t in row if isinstance(t, dict) and t.get("crop") == "STRAWBERRY")
 
-        # ==========================================
-        # 1. Day 0 Opening: Majkel1337 Exact Step 1
-        # ==========================================
-        if step == 0 or (step == 1 and len(unlocked) == 1 and money >= 2500):
+        # =========================================================================
+        # 1. Day 0 Master Opening (Majkel1337 Exact Step 1)
+        # =========================================================================
+        if step <= 1 and len(unlocked) == 1 and money >= 2500:
             return {
                 "farmer": ["BUILD_PASTURE"],
                 "hands": [],
@@ -379,11 +364,11 @@ class GrandmasterAgentV6:
                 ][:10],
             }
 
-        # ==========================================
-        # 2. MARKET SALES FIRST (Cash Generation):
-        # Fertilizer (10), Milk (5), Wool (4), Strawberry (6), Melon (5)
-        # ==========================================
-        is_endgame_liquidation = (day >= 29 and hour >= 16) or (remaining_steps <= 12)
+        # =========================================================================
+        # 2. MARKET SELLING FIRST:
+        # Sell products to generate cash BEFORE buying or hiring
+        # =========================================================================
+        is_endgame_liquidation = remaining_steps <= 18 or (day == 29 and hour >= 18)
         wheat_reserve = (total_animals + animals_in_shed) * 2
 
         sell_schedule = [
@@ -392,10 +377,10 @@ class GrandmasterAgentV6:
             ("WOOL", 4),
             ("STRAWBERRY", 6),
             ("MELON", 5),
-            ("WHEAT", 15),
+            ("EGG", 10),
             ("CARROT", 15),
             ("TOMATO", 10),
-            ("EGG", 10),
+            ("WHEAT", 15),
         ]
 
         for prod, slice_size in sell_schedule:
@@ -412,39 +397,38 @@ class GrandmasterAgentV6:
             sell_qty = qty if is_endgame_liquidation else min(qty, slice_size)
             market_orders.append(["SELL", prod, sell_qty])
 
-        # ==========================================
-        # 3. Daily Labor Re-Hire (Hour 1 & 2):
-        # Scale to 5 early -> 8 mid -> 12 late
-        # ==========================================
-        hires_today = farm.get("hires_today", 0)
-        if (hour == 1 or hour == 2) and remaining_days > 2:
+        # =========================================================================
+        # 3. Daily Labor Scaling (Hour 1 & 2):
+        # Re-hire hands every morning; target scales with phase of game
+        # =========================================================================
+        if (hour == 1 or hour == 2) and remaining_days >= 2:
             target_hires = 5
-            if day >= 6:
+            if day >= 7:
                 target_hires = 8
-            if day >= 10:
+            if day >= 11:
                 target_hires = 12
 
-            while hires_today < target_hires and len(market_orders) < 9 and money >= 20:
+            while hires_today < target_hires and len(market_orders) < 8 and money >= 50:
                 market_orders.append(["HIRE"])
                 hires_today += 1
-                money -= 20
+                money -= 50
 
-        # ==========================================
+        # =========================================================================
         # 4. Strictly Gated Land Expansion:
-        # Day 6 (NE) and Day 11 (SW)
-        # ==========================================
-        if "NE" not in unlocked and money >= 1200 and 6 <= day <= 15 and len(market_orders) < 9:
+        # Day 6 (NE) and Day 11 (SW). Never buy SE.
+        # =========================================================================
+        if "NE" not in unlocked and money >= 1200 and 6 <= day <= 10 and len(market_orders) < 9:
             market_orders.append(["BUY_LAND"])
             money -= 1000
-        elif "SW" not in unlocked and money >= 2500 and 11 <= day <= 18 and len(market_orders) < 9:
+        elif "SW" not in unlocked and money >= 2500 and 11 <= day <= 16 and len(market_orders) < 9:
             market_orders.append(["BUY_LAND"])
             money -= 2000
 
-        # ==========================================
-        # 5. Animal Purchases (Up to Day 11 only):
-        # ==========================================
-        total_capacity = len(PASTURE_LOCATIONS)
-        if (total_animals + animals_in_shed) < total_capacity and day <= 11 and len(market_orders) < 9:
+        # =========================================================================
+        # 5. Animal Purchases: STOPPED STRICTLY AT DAY 11!
+        # Target: 10 Cows + 4 Sheep (14 total)
+        # =========================================================================
+        if day <= 11 and (total_animals + animals_in_shed) < 14 and len(market_orders) < 9:
             if total_cows < 10 and money >= 600:
                 market_orders.append(["BUY_ANIMAL", "COW", 1])
                 money -= 400
@@ -452,9 +436,10 @@ class GrandmasterAgentV6:
                 market_orders.append(["BUY_ANIMAL", "SHEEP", 1])
                 money -= 500
 
-        # ==========================================
+        # =========================================================================
         # 6. Wheat Feed Procurement:
-        # ==========================================
+        # Guarantee enough wheat to feed all animals daily
+        # =========================================================================
         needed_feed = (total_animals + animals_in_shed) * 2
         current_wheat = shed.get("WHEAT", 0)
         if (total_animals + animals_in_shed) > 0 and current_wheat < needed_feed and money >= 100 and len(market_orders) < 9:
@@ -463,42 +448,30 @@ class GrandmasterAgentV6:
                 market_orders.append(["BUY_PRODUCT", "WHEAT", buy_wheat_amt])
                 money -= buy_wheat_amt * 25
 
-        # ==========================================
-        # 7. Seed Purchases:
-        # ==========================================
+        # =========================================================================
+        # 7. Seed Procurement:
+        # Strawberry engine Days 5-11, Wheat maintenance Day 12+
+        # =========================================================================
         chosen_crop = self.select_crop(day, remaining_days, money, strawberry_count)
-        if chosen_crop and remaining_days > 2 and len(market_orders) < 9:
+        if chosen_crop and remaining_days >= 2 and len(market_orders) < 9:
             current_count = seeds.get(chosen_crop, 0)
-            max_cap = 20 if chosen_crop == "STRAWBERRY" else 8
-            if current_count < max_cap:
+            max_needed = 20 if chosen_crop == "STRAWBERRY" else 8
+            if current_count < max_needed:
                 seed_cost = CROPS[chosen_crop]["seed"]
-                buy_n = min(6, int(money // seed_cost))
+                buy_n = min(6, max(0, int(money // seed_cost)))
                 if buy_n > 0:
                     market_orders.append(["BUY_SEED", chosen_crop, buy_n])
                     money -= buy_n * seed_cost
 
-        # ==========================================
-        # 8. SQUAD SPECIALIZATION EXECUTION:
-        # Units 0, 1 (and 2 if animals >= 8): HUSBANDRY
-        # Units 3+: AGRICULTURE
-        # ==========================================
+        # =========================================================================
+        # 8. Units Action Execution: Farmer + All Hands
+        # =========================================================================
         claimed_tiles = set()
-        shared_state = {
-            "animal_pickup_claimed": False,
-            "strawberries": strawberry_count
-        }
-
-        total_units = 1 + len(farm.get("hands", []))
-        husbandry_count = 2 if total_animals <= 6 else 3
-
-        farmer_role = "HUSBANDRY"
-        farmer_act, _ = self.plan_unit_turn(0, farm["farmer"], farmer_role, farm, private, day, hour, step, claimed_tiles, shared_state)
+        farmer_act, _ = self.plan_unit(0, farm["farmer"], farm, private, day, hour, step, claimed_tiles, strawberry_count)
 
         hands_acts = []
         for h_idx, h_pos in enumerate(farm.get("hands", [])):
-            unit_id = h_idx + 1
-            h_role = "HUSBANDRY" if unit_id < husbandry_count else "AGRICULTURE"
-            h_act, _ = self.plan_unit_turn(unit_id, h_pos, h_role, farm, private, day, hour, step, claimed_tiles, shared_state)
+            h_act, _ = self.plan_unit(h_idx + 1, h_pos, farm, private, day, hour, step, claimed_tiles, strawberry_count)
             hands_acts.append(h_act)
 
         return {
@@ -508,9 +481,14 @@ class GrandmasterAgentV6:
         }
 
 
-_grandmaster_agent = GrandmasterAgentV6()
+_champion_agent = ChampionAgentV52()
 
 
 def agent(obs):
-    """Kaggle Environments Entry Point."""
-    return _grandmaster_agent.act(obs)
+    \"\"\"Kaggle Environments Entry Point.\"\"\"
+    return _champion_agent.act(obs)
+"""
+
+with open("06_kaggriculture/main.py", "w", encoding="utf-8") as f:
+    f.write(code)
+print("Wrote Champion Agent v5.2 into 06_kaggriculture/main.py!")

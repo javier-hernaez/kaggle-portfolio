@@ -1,4 +1,4 @@
-"""
+﻿code = """\"\"\"
 Champion Agent v6 (Grandmaster Squad Specialization Edition).
 Directly addresses the 3 bottlenecks identified from replay simulation:
 1. Animal Logistics & Guaranteed Feeding:
@@ -12,7 +12,7 @@ Directly addresses the 3 bottlenecks identified from replay simulation:
    - Perennial strawberries yield continuously every 2 days.
 4. Coordinated Sliced Market Sales:
    - Sells fertilizer (up to 10/turn), milk, wool, strawberries every turn.
-"""
+\"\"\"
 
 CROPS = {
     "WHEAT":      {"seed": 10,  "first_yield_day": 2,  "max_yield_day": 4,  "interval": 0, "ongoing": False},
@@ -512,5 +512,10 @@ _grandmaster_agent = GrandmasterAgentV6()
 
 
 def agent(obs):
-    """Kaggle Environments Entry Point."""
+    \"\"\"Kaggle Environments Entry Point.\"\"\"
     return _grandmaster_agent.act(obs)
+"""
+
+with open("06_kaggriculture/main.py", "w", encoding="utf-8") as f:
+    f.write(code)
+print("Wrote GrandmasterAgentV6 (Squad Specialization) into 06_kaggriculture/main.py!")
