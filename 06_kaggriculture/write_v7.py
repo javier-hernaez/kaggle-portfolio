@@ -1,4 +1,4 @@
-"""
+﻿code = """\"\"\"
 Grandmaster Agent v7 (Price-Aware Economic Engine).
 Upgrades from v6 to eliminate variance and push average score to $85,000+:
 
@@ -14,7 +14,7 @@ Upgrades from v6 to eliminate variance and push average score to $85,000+:
    - Fertilizes Day 0-4 melons to double their yield, providing a massive liquidity burst on Day 10.
 4. AGGRESSIVE 40-STRAWBERRY SCALING:
    - Plants up to 40 perennial strawberries between Day 5 and 13.
-"""
+\"\"\"
 
 CROPS = {
     "WHEAT":      {"seed": 10,  "first_yield_day": 2,  "max_yield_day": 4,  "interval": 0, "ongoing": False},
@@ -542,5 +542,10 @@ _grandmaster_agent = GrandmasterAgentV7()
 
 
 def agent(obs):
-    """Kaggle Environments Entry Point."""
+    \"\"\"Kaggle Environments Entry Point.\"\"\"
     return _grandmaster_agent.act(obs)
+"""
+
+with open("06_kaggriculture/main.py", "w", encoding="utf-8") as f:
+    f.write(code)
+print("Wrote GrandmasterAgentV7 into 06_kaggriculture/main.py!")
