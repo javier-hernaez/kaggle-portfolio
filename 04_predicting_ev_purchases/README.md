@@ -74,20 +74,20 @@ Donde $\Phi(\cdot)$ representa la función de distribución acumulada de la norm
   * **XGBoost Classifier (Hist):** `max_bin=1024`, `max_depth=6`, `colsample_bytree=0.3`, `learning_rate=0.03`.
 * **Ensamble:** Percentile Rank Averaging y test-fold bagging entre 10 modelos (5 folds $\times$ 2 modelos).
 
-### 🏆 Resultados de Validación Cruzada (OOF ROC-AUC)
+### 🏆 Resultados y Progresión en el Leaderboard de Kaggle
 
-| Modelo | Métrica | OOF ROC-AUC | Peso Óptimo | Score Público Kaggle |
+| Versión / Estrategia | OOF ROC-AUC | Score Público Kaggle | Posición Leaderboard | Percentil |
 | :--- | :---: | :---: | :---: | :---: |
-| **High-Res LightGBM** | ROC-AUC | `0.944818` | 0.65 | - |
-| **High-Res XGBoost** | ROC-AUC | `0.944760` | 0.35 | - |
-| **⭐ Super-Ensemble v3 (Grandmaster)** | **ROC-AUC** | **`0.944848`** | **1.00** | **`0.94470` (#589 / 1.583)** |
+| **v1: Baseline Probit + GBDT** | `0.94183` | `0.94151` | #1.005 / 1.583 | Top 64% |
+| **v2: Base Margin + Simpson Paradox** | `0.94203` | `0.94173` | #905 / 1.583 | Top 57% |
+| **v3: Digit Decomp + High-Res Hist (118 feats)** | `0.94485` | `0.94470` | #589 / 1.583 | Top 37% |
+| **v4: Nelder-Mead 10F XGB + Pure LGBM Super-Blend**| `0.94630` | `0.94642` | #266 / 2.216 | Top 12% |
+| **⭐ v5: Meta-Stack Super-Ensemble (Lasso + Tie-Breaker)** | **`0.94635`** | **`0.94650`** | **#88 / 2.216** | **Top 4.0% (Percentil 96%)** |
 
-*Rendimiento por Fold del Super-Ensamble v3:*
-* Fold 1: `0.943758`
-* Fold 2: `0.944600`
-* Fold 3: `0.945606`
-* Fold 4: `0.945278`
-* Fold 5: `0.944972`
+*Detalle de la arquitectura campeona v5:*
+* **Ensamble Multiescala:** Ponderación probabilística por percentiles (`rankdata`) integrando modelos entrenados a 10 folds en XGBoost con triple codificación de targets, LightGBM puro optimizado y Meta-Stacking Lasso.
+* **Ajustes de Frontera Discontinua:** Correcciones exactas en las anomalías generativas del dataset sintético (cliff de ingresos $\ge \$170.537$, zona muerta de ingresos $\$31.004 - \$41.970$, umbral de commute $\ge 83\text{km}$ y condición de spike en $\$30.000$).
+* **Resolución Lexicográfica de Empates:** Algoritmo `lexrank` secundario para desambiguar predicciones idénticas en mesetas de probabilidad.
 
 ---
 
