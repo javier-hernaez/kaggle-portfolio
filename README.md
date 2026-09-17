@@ -18,7 +18,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 01 | [**Titanic: Machine Learning from Disaster**](01_titanic/) | Clasificación Binaria | Woman-Child-Group (WCG) | Accuracy | **`0.81578`** | **#246 / 9.639 (Top 2.5%)** | ✅ Completada |
 | 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | Ensemble (LightGBM + CatBoost) | Accuracy | **`0.80500`** | **#473 / 1.536** | ✅ Completada |
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | Blend (Ridge + Lasso + CB + LGB) | RMSLE | **`0.12589`** | **#943 / 3.178** | ✅ Completada |
-| 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | Meta-Stack Super-Ensemble v5 (Lasso + Tie-Breaker) | ROC-AUC | **`0.94650`** | **#88 / 2.216 (Top 4.0%)** | 🚀 En competición |
+| 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | Multi-Anchor Consensus v8 (Top-3 Anchors + 10F XGB) | ROC-AUC | **`0.94651`** | **#45 / 2.217 (Top 2.0%)** | 🚀 En competición |
 | 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | Ensamble (LR + Ridge + Threshold Opt) | F1-Score | **`0.81336`** | **#214 / 469** | 🚀 En competición |
 | 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Industrial Strategic Agent v3 (Wheat Reserve Fix + Sheep Diversification + Anti-Crash) | Winrate / Coins | **100% WR vs v2 (\$56k - \$66k media)** | *Leaderboard Activo* | 🚀 En competición |
 

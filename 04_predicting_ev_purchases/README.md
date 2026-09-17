@@ -82,12 +82,13 @@ Donde $\Phi(\cdot)$ representa la función de distribución acumulada de la norm
 | **v2: Base Margin + Simpson Paradox** | `0.94203` | `0.94173` | #905 / 1.583 | Top 57% |
 | **v3: Digit Decomp + High-Res Hist (118 feats)** | `0.94485` | `0.94470` | #589 / 1.583 | Top 37% |
 | **v4: Nelder-Mead 10F XGB + Pure LGBM Super-Blend**| `0.94630` | `0.94642` | #266 / 2.216 | Top 12% |
-| **⭐ v5: Meta-Stack Super-Ensemble (Lasso + Tie-Breaker)** | **`0.94635`** | **`0.94650`** | **#88 / 2.216** | **Top 4.0% (Percentil 96%)** |
+| **v5: Meta-Stack Super-Ensemble (Lasso + Tie-Breaker)** | `0.94635` | `0.94650` | #88 / 2.216 | Top 4.0% |
+| **⭐ v8: Multi-Anchor Consensus (Top-3 Anchors + 10F XGBoost)** | **`0.94640`** | **`0.94651`** | **#45 / 2.217** | **Top 2.0% (Percentil 98%)** |
 
-*Detalle de la arquitectura campeona v5:*
-* **Ensamble Multiescala:** Ponderación probabilística por percentiles (`rankdata`) integrando modelos entrenados a 10 folds en XGBoost con triple codificación de targets, LightGBM puro optimizado y Meta-Stacking Lasso.
-* **Ajustes de Frontera Discontinua:** Correcciones exactas en las anomalías generativas del dataset sintético (cliff de ingresos $\ge \$170.537$, zona muerta de ingresos $\$31.004 - \$41.970$, umbral de commute $\ge 83\text{km}$ y condición de spike en $\$30.000$).
-* **Resolución Lexicográfica de Empates:** Algoritmo `lexrank` secundario para desambiguar predicciones idénticas en mesetas de probabilidad.
+*Detalle de la arquitectura campeona v8:*
+* **Multi-Anchor Consensus Optimization:** Ponderación y agregación no lineal de los mejores envíos verificados del certamen (submission 56267408, 56267573, 56267624) junto al modelo XGBoost 10-fold entrenado con triple target encoding dinámico.
+* **Ajustes de Frontera Discontinua:** Corrección matemática sobre las singularidades deterministas del generador sintético (cliff de ingresos $\ge \$170.537$, zona muerta de ingresos $\$31.004 - \$41.970$, corte de commute $\ge 83\text{km}$ y condición de spike en $\$30.000$).
+* **Resolución Lexicográfica de Empates:** Cero empates en el conjunto de test gracias a desambiguación continua de alta resolución.
 
 ---
 
