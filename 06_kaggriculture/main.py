@@ -1,17 +1,17 @@
 """
 Deep Grandmaster Agent (Industrial +1,000 Self-Play Evolved).
-Chromosome Generation: Gen8_Ind6
+Chromosome Generation: Grandmaster_v10_Supreme
 
 Evolved Parameters:
-- NE Land: Day 6+ (Min Money: $1400)
-- SW Land: Day 11+ (Min Money: $2700)
+- NE Land: Day 5+ (Min Money: $1300)
+- SW Land: Day 11+ (Min Money: $2500)
 - Buy SE Land: False (Day 16, Min $4500)
-- Animals: 11 Cows, 3 Sheep (Cutoff Day 12)
-- Strawberries: Base 50 (Boost: +10 if IceCream/Smoothie shop opens)
+- Animals: 10 Cows, 5 Sheep (Cutoff Day 12)
+- Strawberries: Base 45 (Boost: +10 if IceCream/Smoothie shop opens)
 - Sheep Synergy: +2 if Yarn Store opens
-- Labor: Early 6, Mid 7 (Day 6), Late 11 (Day 10)
-- Price Arbitrage: Throttle < 60%, Burst >= 125%
-- Feed Reserve Mult: 2x
+- Labor: Early 7, Mid 7 (Day 6), Late 10 (Day 10)
+- Price Arbitrage: Throttle < 65%, Burst >= 110%
+- Feed Reserve Mult: 1x
 """
 
 CROPS = {
@@ -105,7 +105,7 @@ class DeepChampionAgent:
             return None
 
         # Phase 2: Strawberry Engine
-        if 5 <= day <= 12:
+        if 5 <= day <= 13:
             if strawberry_count < target_strawberries:
                 return "STRAWBERRY"
             if money >= CROPS["WHEAT"]["seed"]:
@@ -360,8 +360,8 @@ class DeepChampionAgent:
         has_ice_cream_or_smoothie = any(s in ["ICE_CREAM_SHOP", "SMOOTHIE_SHOP", "BRUNCH_SPOT"] for s in unlocked_shops)
         has_yarn_store = "YARN_STORE" in unlocked_shops
 
-        eff_target_strawberries = 50 + (10 if has_ice_cream_or_smoothie else 0)
-        eff_target_sheep = 3 + (2 if has_yarn_store else 0)
+        eff_target_strawberries = 45 + (10 if has_ice_cream_or_smoothie else 0)
+        eff_target_sheep = 5 + (2 if has_yarn_store else 0)
 
         market_orders = []
 
@@ -388,10 +388,10 @@ class DeepChampionAgent:
 
         # 2. Price-Aware Sales
         is_endgame_liquidation = (day >= 29 and hour >= 16) or (remaining_steps <= 12)
-        wheat_reserve = (total_animals + animals_in_shed) * 2
+        wheat_reserve = (total_animals + animals_in_shed) * 1
 
         sell_schedule = [
-            ("FERTILIZER", 8),
+            ("FERTILIZER", 12),
             ("MILK", 6),
             ("WOOL", 4),
             ("STRAWBERRY", 8),
@@ -410,9 +410,9 @@ class DeepChampionAgent:
             curr_price = market_prices.get(prod, BASE_PRICES.get(prod, 50))
             base_p = BASE_PRICES.get(prod, 50)
 
-            if not is_endgame_liquidation and curr_price < base_p * 0.6:
+            if not is_endgame_liquidation and curr_price < base_p * 0.65:
                 effective_slice = max(1, base_slice // 2)
-            elif curr_price >= base_p * 1.25:
+            elif curr_price >= base_p * 1.1:
                 effective_slice = base_slice + 2
             else:
                 effective_slice = base_slice
@@ -429,11 +429,11 @@ class DeepChampionAgent:
         # 3. Daily Labor Re-Hire
         hires_today = farm.get("hires_today", 0)
         if (hour == 1 or hour == 2) and remaining_days > 2:
-            target_hires = 6
+            target_hires = 7
             if day >= 6:
                 target_hires = 7
             if day >= 10:
-                target_hires = 11
+                target_hires = 10
 
             while hires_today < target_hires and len(market_orders) < 9 and money >= 20:
                 market_orders.append(["HIRE"])
@@ -441,10 +441,10 @@ class DeepChampionAgent:
                 money -= 20
 
         # 4. Gated Land Expansion
-        if "NE" not in unlocked and money >= 1400 and day >= 6 and len(market_orders) < 9:
+        if "NE" not in unlocked and money >= 1300 and day >= 5 and len(market_orders) < 9:
             market_orders.append(["BUY_LAND"])
             money -= 1000
-        elif "SW" not in unlocked and money >= 2700 and day >= 11 and len(market_orders) < 9:
+        elif "SW" not in unlocked and money >= 2500 and day >= 11 and len(market_orders) < 9:
             market_orders.append(["BUY_LAND"])
             money -= 2000
         elif False and "SE" not in unlocked and money >= 4500 and day >= 16 and len(market_orders) < 9:
@@ -454,15 +454,15 @@ class DeepChampionAgent:
         # 5. Balanced Animal Purchases
         total_capacity = len(PASTURE_LOCATIONS)
         if (total_animals + animals_in_shed) < total_capacity and day <= 12 and len(market_orders) < 9:
-            if total_sheep < eff_target_sheep and (total_cows >= total_sheep * 2.5 or total_cows >= 11) and money >= 600:
+            if total_sheep < eff_target_sheep and (total_cows >= total_sheep * 2.5 or total_cows >= 10) and money >= 600:
                 market_orders.append(["BUY_ANIMAL", "SHEEP", 1])
                 money -= 500
-            elif total_cows < 11 and money >= 500:
+            elif total_cows < 10 and money >= 500:
                 market_orders.append(["BUY_ANIMAL", "COW", 1])
                 money -= 400
 
         # 6. Wheat Feed Procurement
-        needed_feed = (total_animals + animals_in_shed) * 2
+        needed_feed = (total_animals + animals_in_shed) * 1
         current_wheat = shed.get("WHEAT", 0)
         if (total_animals + animals_in_shed) > 0 and current_wheat < needed_feed and money >= 100 and len(market_orders) < 9:
             buy_wheat_amt = min(8, needed_feed - current_wheat + 2)
