@@ -1,18 +1,7 @@
-"""
-Deep Grandmaster Agent (Industrial +1,000 Self-Play Evolved).
-Chromosome Generation: Gen8_Ind6
-
-Evolved Parameters:
-- NE Land: Day 6+ (Min Money: $1400)
-- SW Land: Day 11+ (Min Money: $2700)
-- Buy SE Land: False (Day 16, Min $4500)
-- Animals: 11 Cows, 3 Sheep (Cutoff Day 12)
-- Strawberries: Base 50 (Boost: +10 if IceCream/Smoothie shop opens)
-- Sheep Synergy: +2 if Yarn Store opens
-- Labor: Early 6, Mid 7 (Day 6), Late 11 (Day 10)
-- Price Arbitrage: Throttle < 60%, Burst >= 125%
-- Feed Reserve Mult: 2x
-"""
+﻿import copy
+import random
+from dataclasses import dataclass, asdict
+from typing import Dict, List, Tuple
 
 CROPS = {
     "WHEAT":      {"seed": 10,  "first_yield_day": 2,  "max_yield_day": 4,  "interval": 0, "ongoing": False},
@@ -27,18 +16,6 @@ BASE_PRICES = {
     "MELON": 250, "EGG": 50, "MILK": 160, "WOOL": 200, "FERTILIZER": 100
 }
 
-ANIMALS = {
-    "COW":   {"cost": 400, "product": "MILK"},
-    "SHEEP": {"cost": 500, "product": "WOOL"},
-}
-
-MOVES = {
-    (0, -1): "NORTH",
-    (0,  1): "SOUTH",
-    (1,  0): "EAST",
-    (-1, 0): "WEST",
-}
-
 PASTURE_LOCATIONS = [
     (4, 4), (3, 4), (4, 3), (3, 3),
     (5, 4), (5, 3), (4, 2), (5, 2),
@@ -48,6 +25,13 @@ PASTURE_LOCATIONS = [
 
 SHED_ADJACENT = {(4, 4), (5, 4), (4, 5), (5, 5)}
 SHED_CENTER = (4, 4)
+
+MOVES = {
+    (0, -1): "NORTH",
+    (0,  1): "SOUTH",
+    (1,  0): "EAST",
+    (-1, 0): "WEST",
+}
 
 
 def _dist(a, b):
@@ -82,9 +66,142 @@ def _get_quadrant(x, y, board_size=10):
     return ("N" if y < half else "S") + ("W" if x < half else "E")
 
 
-class DeepChampionAgent:
-    def __init__(self):
-        pass
+@dataclass
+class Genome:
+    """The 28-gene strategic chromosome for the Grandmaster Agent."""
+    name: str = "Grandmaster_Base"
+    # 1-6: Land expansion
+    land_ne_min_day: int = 5
+    land_ne_min_money: int = 1300
+    land_sw_min_day: int = 10
+    land_sw_min_money: int = 2500
+    buy_se_land: bool = False
+    land_se_min_day: int = 16
+    land_se_min_money: int = 4500
+
+    # 7-11: Livestock herd
+    target_cows: int = 10
+    target_sheep: int = 5
+    animal_end_day: int = 12
+    cow_to_sheep_ratio: float = 2.0
+    wheat_reserve_mult: int = 1
+
+    # 12-15: Strawberry Engine
+    strawberry_start_day: int = 5
+    strawberry_end_day: int = 13
+    target_strawberries: int = 45
+    strawberry_seed_batch: int = 10
+
+    # 16-20: Labor scaling
+    labor_early: int = 7
+    labor_mid: int = 8
+    labor_mid_day: int = 6
+    labor_late: int = 12
+    labor_late_day: int = 10
+
+    # 21-25: Market Arbitrage & Batch Slices
+    price_throttle_ratio: float = 0.65
+    price_burst_ratio: float = 1.15
+    batch_milk: int = 6
+    batch_wool: int = 4
+    batch_strawberry: int = 8
+    batch_fertilizer: int = 12
+    batch_melon: int = 6
+
+    # 26-28: Town Shop Synergy & Weather
+    shop_icecream_straw_boost: int = 10  # boost strawberry target if icecream/smoothie shop open
+    shop_yarn_sheep_boost: int = 2       # boost sheep target if yarn store open
+    skip_watering_if_rained: bool = True # rain awareness
+
+    def to_dict(self):
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, d):
+        return cls(**d)
+
+
+def mutate(genome: Genome, mutation_rate: float = 0.25) -> Genome:
+    """Gaussian and uniform perturbations across all 28 genes."""
+    g = copy.deepcopy(genome)
+    g.name = f"Mut_{random.randint(1000, 9999)}"
+
+    # Land
+    if random.random() < mutation_rate:
+        g.land_ne_min_day = max(4, min(7, g.land_ne_min_day + random.choice([-1, 0, 1])))
+    if random.random() < mutation_rate:
+        g.land_ne_min_money = max(900, min(1600, g.land_ne_min_money + random.choice([-100, 100])))
+    if random.random() < mutation_rate:
+        g.land_sw_min_day = max(9, min(13, g.land_sw_min_day + random.choice([-1, 0, 1])))
+    if random.random() < mutation_rate:
+        g.land_sw_min_money = max(2000, min(3000, g.land_sw_min_money + random.choice([-200, 200])))
+    if random.random() < mutation_rate * 0.4:
+        g.buy_se_land = not g.buy_se_land
+
+    # Animals
+    if random.random() < mutation_rate:
+        g.target_cows = max(6, min(12, g.target_cows + random.choice([-1, 1])))
+    if random.random() < mutation_rate:
+        g.target_sheep = max(2, min(6, g.target_sheep + random.choice([-1, 1])))
+    if random.random() < mutation_rate:
+        g.animal_end_day = max(9, min(14, g.animal_end_day + random.choice([-1, 0, 1])))
+    if random.random() < mutation_rate:
+        g.wheat_reserve_mult = max(1, min(3, g.wheat_reserve_mult + random.choice([-1, 1])))
+
+    # Strawberries
+    if random.random() < mutation_rate:
+        g.target_strawberries = max(30, min(50, g.target_strawberries + random.choice([-5, 5])))
+    if random.random() < mutation_rate:
+        g.strawberry_start_day = max(4, min(7, g.strawberry_start_day + random.choice([-1, 0, 1])))
+    if random.random() < mutation_rate:
+        g.strawberry_end_day = max(11, min(15, g.strawberry_end_day + random.choice([-1, 1])))
+
+    # Labor
+    if random.random() < mutation_rate:
+        g.labor_early = max(5, min(8, g.labor_early + random.choice([-1, 1])))
+    if random.random() < mutation_rate:
+        g.labor_mid = max(7, min(10, g.labor_mid + random.choice([-1, 1])))
+    if random.random() < mutation_rate:
+        g.labor_late = max(10, min(15, g.labor_late + random.choice([-1, 1])))
+
+    # Pricing
+    if random.random() < mutation_rate:
+        g.price_throttle_ratio = round(max(0.55, min(0.85, g.price_throttle_ratio + random.choice([-0.05, 0.05]))), 2)
+    if random.random() < mutation_rate:
+        g.price_burst_ratio = round(max(1.05, min(1.25, g.price_burst_ratio + random.choice([-0.05, 0.05]))), 2)
+    if random.random() < mutation_rate:
+        g.batch_fertilizer = max(8, min(15, g.batch_fertilizer + random.choice([-2, 2])))
+    if random.random() < mutation_rate:
+        g.batch_milk = max(4, min(8, g.batch_milk + random.choice([-1, 1])))
+
+    # Shop Synergy
+    if random.random() < mutation_rate:
+        g.shop_icecream_straw_boost = max(5, min(15, g.shop_icecream_straw_boost + random.choice([-5, 5])))
+    if random.random() < mutation_rate:
+        g.shop_yarn_sheep_boost = max(0, min(3, g.shop_yarn_sheep_boost + random.choice([-1, 1])))
+
+    return g
+
+
+def crossover(parent_a: Genome, parent_b: Genome) -> Genome:
+    """Uniform genetic crossover combining traits from two fit parents."""
+    dict_a = parent_a.to_dict()
+    dict_b = parent_b.to_dict()
+    child_dict = {}
+
+    for key in dict_a:
+        if key == "name":
+            child_dict[key] = f"Cross_{random.randint(1000, 9999)}"
+        else:
+            child_dict[key] = dict_a[key] if random.random() < 0.5 else dict_b[key]
+
+    return Genome.from_dict(child_dict)
+
+
+class DeepGrandmasterAgent:
+    """Execution engine featuring 28-gene brain, shop synergy, and collision prevention."""
+    def __init__(self, genome: Genome):
+        self.g = genome
 
     def select_crop(self, day, remaining_days, money, strawberry_count, target_strawberries):
         if remaining_days <= 1:
@@ -97,7 +214,7 @@ class DeepChampionAgent:
             return None
 
         # Phase 1: Melons + Wheat
-        if day < 5:
+        if day < self.g.strawberry_start_day:
             if money >= CROPS["MELON"]["seed"]:
                 return "MELON"
             if money >= CROPS["WHEAT"]["seed"]:
@@ -105,7 +222,7 @@ class DeepChampionAgent:
             return None
 
         # Phase 2: Strawberry Engine
-        if 5 <= day <= 12:
+        if self.g.strawberry_start_day <= day <= self.g.strawberry_end_day:
             if strawberry_count < target_strawberries:
                 return "STRAWBERRY"
             if money >= CROPS["WHEAT"]["seed"]:
@@ -356,12 +473,12 @@ class DeepChampionAgent:
         market_prices = obs.get("market", {}).get("prices", {})
         unlocked_shops = obs.get("town", {}).get("unlocked_shops", [])
 
-        # Dynamic Town Shop Adaptation
+        # Shop Synergies
         has_ice_cream_or_smoothie = any(s in ["ICE_CREAM_SHOP", "SMOOTHIE_SHOP", "BRUNCH_SPOT"] for s in unlocked_shops)
         has_yarn_store = "YARN_STORE" in unlocked_shops
 
-        eff_target_strawberries = 50 + (10 if has_ice_cream_or_smoothie else 0)
-        eff_target_sheep = 3 + (2 if has_yarn_store else 0)
+        eff_target_strawberries = self.g.target_strawberries + (self.g.shop_icecream_straw_boost if has_ice_cream_or_smoothie else 0)
+        eff_target_sheep = self.g.target_sheep + (self.g.shop_yarn_sheep_boost if has_yarn_store else 0)
 
         market_orders = []
 
@@ -388,14 +505,14 @@ class DeepChampionAgent:
 
         # 2. Price-Aware Sales
         is_endgame_liquidation = (day >= 29 and hour >= 16) or (remaining_steps <= 12)
-        wheat_reserve = (total_animals + animals_in_shed) * 2
+        wheat_reserve = (total_animals + animals_in_shed) * self.g.wheat_reserve_mult
 
         sell_schedule = [
-            ("FERTILIZER", 8),
-            ("MILK", 6),
-            ("WOOL", 4),
-            ("STRAWBERRY", 8),
-            ("MELON", 6),
+            ("FERTILIZER", self.g.batch_fertilizer),
+            ("MILK", self.g.batch_milk),
+            ("WOOL", self.g.batch_wool),
+            ("STRAWBERRY", self.g.batch_strawberry),
+            ("MELON", self.g.batch_melon),
             ("WHEAT", 15),
             ("CARROT", 15),
             ("TOMATO", 10),
@@ -410,9 +527,9 @@ class DeepChampionAgent:
             curr_price = market_prices.get(prod, BASE_PRICES.get(prod, 50))
             base_p = BASE_PRICES.get(prod, 50)
 
-            if not is_endgame_liquidation and curr_price < base_p * 0.6:
+            if not is_endgame_liquidation and curr_price < base_p * self.g.price_throttle_ratio:
                 effective_slice = max(1, base_slice // 2)
-            elif curr_price >= base_p * 1.25:
+            elif curr_price >= base_p * self.g.price_burst_ratio:
                 effective_slice = base_slice + 2
             else:
                 effective_slice = base_slice
@@ -429,11 +546,11 @@ class DeepChampionAgent:
         # 3. Daily Labor Re-Hire
         hires_today = farm.get("hires_today", 0)
         if (hour == 1 or hour == 2) and remaining_days > 2:
-            target_hires = 6
-            if day >= 6:
-                target_hires = 7
-            if day >= 10:
-                target_hires = 11
+            target_hires = self.g.labor_early
+            if day >= self.g.labor_mid_day:
+                target_hires = self.g.labor_mid
+            if day >= self.g.labor_late_day:
+                target_hires = self.g.labor_late
 
             while hires_today < target_hires and len(market_orders) < 9 and money >= 20:
                 market_orders.append(["HIRE"])
@@ -441,28 +558,28 @@ class DeepChampionAgent:
                 money -= 20
 
         # 4. Gated Land Expansion
-        if "NE" not in unlocked and money >= 1400 and day >= 6 and len(market_orders) < 9:
+        if "NE" not in unlocked and money >= self.g.land_ne_min_money and day >= self.g.land_ne_min_day and len(market_orders) < 9:
             market_orders.append(["BUY_LAND"])
             money -= 1000
-        elif "SW" not in unlocked and money >= 2700 and day >= 11 and len(market_orders) < 9:
+        elif "SW" not in unlocked and money >= self.g.land_sw_min_money and day >= self.g.land_sw_min_day and len(market_orders) < 9:
             market_orders.append(["BUY_LAND"])
             money -= 2000
-        elif False and "SE" not in unlocked and money >= 4500 and day >= 16 and len(market_orders) < 9:
+        elif self.g.buy_se_land and "SE" not in unlocked and money >= self.g.land_se_min_money and day >= self.g.land_se_min_day and len(market_orders) < 9:
             market_orders.append(["BUY_LAND"])
             money -= 3000
 
         # 5. Balanced Animal Purchases
         total_capacity = len(PASTURE_LOCATIONS)
-        if (total_animals + animals_in_shed) < total_capacity and day <= 12 and len(market_orders) < 9:
-            if total_sheep < eff_target_sheep and (total_cows >= total_sheep * 2.5 or total_cows >= 11) and money >= 600:
+        if (total_animals + animals_in_shed) < total_capacity and day <= self.g.animal_end_day and len(market_orders) < 9:
+            if total_sheep < eff_target_sheep and (total_cows >= total_sheep * self.g.cow_to_sheep_ratio or total_cows >= self.g.target_cows) and money >= 600:
                 market_orders.append(["BUY_ANIMAL", "SHEEP", 1])
                 money -= 500
-            elif total_cows < 11 and money >= 500:
+            elif total_cows < self.g.target_cows and money >= 500:
                 market_orders.append(["BUY_ANIMAL", "COW", 1])
                 money -= 400
 
         # 6. Wheat Feed Procurement
-        needed_feed = (total_animals + animals_in_shed) * 2
+        needed_feed = (total_animals + animals_in_shed) * self.g.wheat_reserve_mult
         current_wheat = shed.get("WHEAT", 0)
         if (total_animals + animals_in_shed) > 0 and current_wheat < needed_feed and money >= 100 and len(market_orders) < 9:
             buy_wheat_amt = min(8, needed_feed - current_wheat + 2)
@@ -477,7 +594,7 @@ class DeepChampionAgent:
             max_cap = 25 if chosen_crop == "STRAWBERRY" else 8
             if current_count < max_cap:
                 seed_cost = CROPS[chosen_crop]["seed"]
-                max_batch = 10 if chosen_crop == "STRAWBERRY" else 6
+                max_batch = self.g.strawberry_seed_batch if chosen_crop == "STRAWBERRY" else 6
                 buy_n = min(max_batch, int(money // seed_cost))
                 if buy_n > 0:
                     market_orders.append(["BUY_SEED", chosen_crop, buy_n])
@@ -510,9 +627,8 @@ class DeepChampionAgent:
         }
 
 
-_champion_brain = DeepChampionAgent()
-
-
-def agent(obs):
-    """Kaggle Environments Entry Point."""
-    return _champion_brain.act(obs)
+def make_agent(genome: Genome):
+    p_agent = DeepGrandmasterAgent(genome)
+    def _agent(obs):
+        return p_agent.act(obs)
+    return _agent

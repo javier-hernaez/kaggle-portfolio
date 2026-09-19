@@ -1,43 +1,80 @@
-"""
+﻿import json
+import os
+import sys
+import time
+import random
+from typing import List, Dict, Tuple
+
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
+from mega_simulator.agent_genome import Genome, mutate, crossover
+from mega_simulator.arena import Arena
+
+HOF_FILE = "06_kaggriculture/mega_simulator/hall_of_fame.json"
+MAIN_PY_FILE = "06_kaggriculture/main.py"
+
+
+def save_hall_of_fame(history: List[Dict]):
+    with open(HOF_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, indent=2)
+
+
+def load_hall_of_fame() -> List[Dict]:
+    if os.path.exists(HOF_FILE):
+        try:
+            with open(HOF_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+
+def export_genome_to_main_py(g: Genome):
+    """Exports the current best evolved genome to main.py."""
+    code = f'''"""
 Deep Grandmaster Agent (Industrial +1,000 Self-Play Evolved).
-Chromosome Generation: Gen8_Ind6
+Chromosome Generation: {g.name}
 
 Evolved Parameters:
-- NE Land: Day 6+ (Min Money: $1400)
-- SW Land: Day 11+ (Min Money: $2700)
-- Buy SE Land: False (Day 16, Min $4500)
-- Animals: 11 Cows, 3 Sheep (Cutoff Day 12)
-- Strawberries: Base 50 (Boost: +10 if IceCream/Smoothie shop opens)
-- Sheep Synergy: +2 if Yarn Store opens
-- Labor: Early 6, Mid 7 (Day 6), Late 11 (Day 10)
-- Price Arbitrage: Throttle < 60%, Burst >= 125%
-- Feed Reserve Mult: 2x
+- NE Land: Day {g.land_ne_min_day}+ (Min Money: ${g.land_ne_min_money})
+- SW Land: Day {g.land_sw_min_day}+ (Min Money: ${g.land_sw_min_money})
+- Buy SE Land: {g.buy_se_land} (Day {g.land_se_min_day}, Min ${g.land_se_min_money})
+- Animals: {g.target_cows} Cows, {g.target_sheep} Sheep (Cutoff Day {g.animal_end_day})
+- Strawberries: Base {g.target_strawberries} (Boost: +{g.shop_icecream_straw_boost} if IceCream/Smoothie shop opens)
+- Sheep Synergy: +{g.shop_yarn_sheep_boost} if Yarn Store opens
+- Labor: Early {g.labor_early}, Mid {g.labor_mid} (Day {g.labor_mid_day}), Late {g.labor_late} (Day {g.labor_late_day})
+- Price Arbitrage: Throttle < {g.price_throttle_ratio*100:.0f}%, Burst >= {g.price_burst_ratio*100:.0f}%
+- Feed Reserve Mult: {g.wheat_reserve_mult}x
 """
 
-CROPS = {
-    "WHEAT":      {"seed": 10,  "first_yield_day": 2,  "max_yield_day": 4,  "interval": 0, "ongoing": False},
-    "CARROT":     {"seed": 20,  "first_yield_day": 2,  "max_yield_day": 3,  "interval": 0, "ongoing": False},
-    "TOMATO":     {"seed": 50,  "first_yield_day": 8,  "max_yield_day": 8,  "interval": 1, "ongoing": True},
-    "STRAWBERRY": {"seed": 100, "first_yield_day": 10, "max_yield_day": 10, "interval": 2, "ongoing": True},
-    "MELON":      {"seed": 80,  "first_yield_day": 10, "max_yield_day": 12, "interval": 0, "ongoing": False},
-}
+CROPS = {{
+    "WHEAT":      {{"seed": 10,  "first_yield_day": 2,  "max_yield_day": 4,  "interval": 0, "ongoing": False}},
+    "CARROT":     {{"seed": 20,  "first_yield_day": 2,  "max_yield_day": 3,  "interval": 0, "ongoing": False}},
+    "TOMATO":     {{"seed": 50,  "first_yield_day": 8,  "max_yield_day": 8,  "interval": 1, "ongoing": True}},
+    "STRAWBERRY": {{"seed": 100, "first_yield_day": 10, "max_yield_day": 10, "interval": 2, "ongoing": True}},
+    "MELON":      {{"seed": 80,  "first_yield_day": 10, "max_yield_day": 12, "interval": 0, "ongoing": False}},
+}}
 
-BASE_PRICES = {
+BASE_PRICES = {{
     "WHEAT": 25, "CARROT": 35, "TOMATO": 60, "STRAWBERRY": 120,
     "MELON": 250, "EGG": 50, "MILK": 160, "WOOL": 200, "FERTILIZER": 100
-}
+}}
 
-ANIMALS = {
-    "COW":   {"cost": 400, "product": "MILK"},
-    "SHEEP": {"cost": 500, "product": "WOOL"},
-}
+ANIMALS = {{
+    "COW":   {{"cost": 400, "product": "MILK"}},
+    "SHEEP": {{"cost": 500, "product": "WOOL"}},
+}}
 
-MOVES = {
+MOVES = {{
     (0, -1): "NORTH",
     (0,  1): "SOUTH",
     (1,  0): "EAST",
     (-1, 0): "WEST",
-}
+}}
 
 PASTURE_LOCATIONS = [
     (4, 4), (3, 4), (4, 3), (3, 3),
@@ -46,7 +83,7 @@ PASTURE_LOCATIONS = [
     (2, 4), (3, 5), (4, 5)
 ]
 
-SHED_ADJACENT = {(4, 4), (5, 4), (4, 5), (5, 5)}
+SHED_ADJACENT = {{(4, 4), (5, 4), (4, 5), (5, 5)}}
 SHED_CENTER = (4, 4)
 
 
@@ -97,7 +134,7 @@ class DeepChampionAgent:
             return None
 
         # Phase 1: Melons + Wheat
-        if day < 5:
+        if day < {g.strawberry_start_day}:
             if money >= CROPS["MELON"]["seed"]:
                 return "MELON"
             if money >= CROPS["WHEAT"]["seed"]:
@@ -105,7 +142,7 @@ class DeepChampionAgent:
             return None
 
         # Phase 2: Strawberry Engine
-        if 5 <= day <= 12:
+        if {g.strawberry_start_day} <= day <= {g.strawberry_end_day}:
             if strawberry_count < target_strawberries:
                 return "STRAWBERRY"
             if money >= CROPS["WHEAT"]["seed"]:
@@ -130,9 +167,9 @@ class DeepChampionAgent:
         ux, uy = unit_pos
         board_size = len(farm["tiles"])
         tile = farm["tiles"][uy][ux]
-        inv = private["inventories"][unit_idx] if unit_idx < len(private.get("inventories", [])) else {}
-        shed = private.get("shed", {})
-        seeds = private.get("seeds", {})
+        inv = private["inventories"][unit_idx] if unit_idx < len(private.get("inventories", [])) else {{}}
+        shed = private.get("shed", {{}})
+        seeds = private.get("seeds", {{}})
         remaining_steps = 720 - step
         remaining_days = 30 - day
         is_endgame = (day >= 29 and hour >= 16) or (remaining_steps <= 18)
@@ -209,7 +246,7 @@ class DeepChampionAgent:
             if tile.get("kind") == "PLANT":
                 crop = tile.get("crop", "")
                 age = day - tile.get("planted_day", 0)
-                c_data = CROPS.get(crop, {})
+                c_data = CROPS.get(crop, {{}})
                 peak = age >= c_data.get("max_yield_day", 99)
                 if (peak or is_endgame) and tile.get("yield_units", 0) > 0:
                     return ["HARVEST"], (ux, uy)
@@ -312,7 +349,7 @@ class DeepChampionAgent:
                     prio = -1
 
                     if isinstance(t, dict) and t.get("kind") == "PLANT":
-                        c_data = CROPS.get(t["crop"], {})
+                        c_data = CROPS.get(t["crop"], {{}})
                         age = day - t["planted_day"]
                         if (age >= c_data["max_yield_day"] or is_endgame) and t.get("yield_units", 0) > 0:
                             prio = 10
@@ -350,18 +387,18 @@ class DeepChampionAgent:
         remaining_steps = 720 - step
 
         money = farm["money"]
-        shed = private.get("shed", {})
-        seeds = private.get("seeds", {})
+        shed = private.get("shed", {{}})
+        seeds = private.get("seeds", {{}})
         unlocked = farm.get("unlocked_quadrants", ["NW"])
-        market_prices = obs.get("market", {}).get("prices", {})
-        unlocked_shops = obs.get("town", {}).get("unlocked_shops", [])
+        market_prices = obs.get("market", {{}}).get("prices", {{}})
+        unlocked_shops = obs.get("town", {{}}).get("unlocked_shops", [])
 
         # Dynamic Town Shop Adaptation
         has_ice_cream_or_smoothie = any(s in ["ICE_CREAM_SHOP", "SMOOTHIE_SHOP", "BRUNCH_SPOT"] for s in unlocked_shops)
         has_yarn_store = "YARN_STORE" in unlocked_shops
 
-        eff_target_strawberries = 50 + (10 if has_ice_cream_or_smoothie else 0)
-        eff_target_sheep = 3 + (2 if has_yarn_store else 0)
+        eff_target_strawberries = {g.target_strawberries} + ({g.shop_icecream_straw_boost} if has_ice_cream_or_smoothie else 0)
+        eff_target_sheep = {g.target_sheep} + ({g.shop_yarn_sheep_boost} if has_yarn_store else 0)
 
         market_orders = []
 
@@ -373,7 +410,7 @@ class DeepChampionAgent:
 
         # 1. Day 0 Master Opening
         if step == 0 or (step == 1 and len(unlocked) == 1 and money >= 2500):
-            return {
+            return {{
                 "farmer": ["BUILD_PASTURE"],
                 "hands": [],
                 "market": [
@@ -384,18 +421,18 @@ class DeepChampionAgent:
                     ["BUY_SEED", "WHEAT", 7],
                     ["BUY_PRODUCT", "WHEAT", 6],
                 ][:10],
-            }
+            }}
 
         # 2. Price-Aware Sales
         is_endgame_liquidation = (day >= 29 and hour >= 16) or (remaining_steps <= 12)
-        wheat_reserve = (total_animals + animals_in_shed) * 2
+        wheat_reserve = (total_animals + animals_in_shed) * {g.wheat_reserve_mult}
 
         sell_schedule = [
-            ("FERTILIZER", 8),
-            ("MILK", 6),
-            ("WOOL", 4),
-            ("STRAWBERRY", 8),
-            ("MELON", 6),
+            ("FERTILIZER", {g.batch_fertilizer}),
+            ("MILK", {g.batch_milk}),
+            ("WOOL", {g.batch_wool}),
+            ("STRAWBERRY", {g.batch_strawberry}),
+            ("MELON", {g.batch_melon}),
             ("WHEAT", 15),
             ("CARROT", 15),
             ("TOMATO", 10),
@@ -410,9 +447,9 @@ class DeepChampionAgent:
             curr_price = market_prices.get(prod, BASE_PRICES.get(prod, 50))
             base_p = BASE_PRICES.get(prod, 50)
 
-            if not is_endgame_liquidation and curr_price < base_p * 0.6:
+            if not is_endgame_liquidation and curr_price < base_p * {g.price_throttle_ratio}:
                 effective_slice = max(1, base_slice // 2)
-            elif curr_price >= base_p * 1.25:
+            elif curr_price >= base_p * {g.price_burst_ratio}:
                 effective_slice = base_slice + 2
             else:
                 effective_slice = base_slice
@@ -429,11 +466,11 @@ class DeepChampionAgent:
         # 3. Daily Labor Re-Hire
         hires_today = farm.get("hires_today", 0)
         if (hour == 1 or hour == 2) and remaining_days > 2:
-            target_hires = 6
-            if day >= 6:
-                target_hires = 7
-            if day >= 10:
-                target_hires = 11
+            target_hires = {g.labor_early}
+            if day >= {g.labor_mid_day}:
+                target_hires = {g.labor_mid}
+            if day >= {g.labor_late_day}:
+                target_hires = {g.labor_late}
 
             while hires_today < target_hires and len(market_orders) < 9 and money >= 20:
                 market_orders.append(["HIRE"])
@@ -441,28 +478,28 @@ class DeepChampionAgent:
                 money -= 20
 
         # 4. Gated Land Expansion
-        if "NE" not in unlocked and money >= 1400 and day >= 6 and len(market_orders) < 9:
+        if "NE" not in unlocked and money >= {g.land_ne_min_money} and day >= {g.land_ne_min_day} and len(market_orders) < 9:
             market_orders.append(["BUY_LAND"])
             money -= 1000
-        elif "SW" not in unlocked and money >= 2700 and day >= 11 and len(market_orders) < 9:
+        elif "SW" not in unlocked and money >= {g.land_sw_min_money} and day >= {g.land_sw_min_day} and len(market_orders) < 9:
             market_orders.append(["BUY_LAND"])
             money -= 2000
-        elif False and "SE" not in unlocked and money >= 4500 and day >= 16 and len(market_orders) < 9:
+        elif {g.buy_se_land} and "SE" not in unlocked and money >= {g.land_se_min_money} and day >= {g.land_se_min_day} and len(market_orders) < 9:
             market_orders.append(["BUY_LAND"])
             money -= 3000
 
         # 5. Balanced Animal Purchases
         total_capacity = len(PASTURE_LOCATIONS)
-        if (total_animals + animals_in_shed) < total_capacity and day <= 12 and len(market_orders) < 9:
-            if total_sheep < eff_target_sheep and (total_cows >= total_sheep * 2.5 or total_cows >= 11) and money >= 600:
+        if (total_animals + animals_in_shed) < total_capacity and day <= {g.animal_end_day} and len(market_orders) < 9:
+            if total_sheep < eff_target_sheep and (total_cows >= total_sheep * {g.cow_to_sheep_ratio} or total_cows >= {g.target_cows}) and money >= 600:
                 market_orders.append(["BUY_ANIMAL", "SHEEP", 1])
                 money -= 500
-            elif total_cows < 11 and money >= 500:
+            elif total_cows < {g.target_cows} and money >= 500:
                 market_orders.append(["BUY_ANIMAL", "COW", 1])
                 money -= 400
 
         # 6. Wheat Feed Procurement
-        needed_feed = (total_animals + animals_in_shed) * 2
+        needed_feed = (total_animals + animals_in_shed) * {g.wheat_reserve_mult}
         current_wheat = shed.get("WHEAT", 0)
         if (total_animals + animals_in_shed) > 0 and current_wheat < needed_feed and money >= 100 and len(market_orders) < 9:
             buy_wheat_amt = min(8, needed_feed - current_wheat + 2)
@@ -477,7 +514,7 @@ class DeepChampionAgent:
             max_cap = 25 if chosen_crop == "STRAWBERRY" else 8
             if current_count < max_cap:
                 seed_cost = CROPS[chosen_crop]["seed"]
-                max_batch = 10 if chosen_crop == "STRAWBERRY" else 6
+                max_batch = {g.strawberry_seed_batch} if chosen_crop == "STRAWBERRY" else 6
                 buy_n = min(max_batch, int(money // seed_cost))
                 if buy_n > 0:
                     market_orders.append(["BUY_SEED", chosen_crop, buy_n])
@@ -485,10 +522,10 @@ class DeepChampionAgent:
 
         # 8. Squad Specialization Execution
         claimed_tiles = set()
-        shared_state = {
+        shared_state = {{
             "animal_pickup_claimed": False,
             "strawberries": strawberry_count
-        }
+        }}
 
         total_units = 1 + len(farm.get("hands", []))
         husbandry_count = 2 if total_animals <= 6 else 3
@@ -503,11 +540,11 @@ class DeepChampionAgent:
             h_act, _ = self.plan_unit_turn(unit_id, h_pos, h_role, farm, private, day, hour, step, claimed_tiles, shared_state, eff_target_strawberries)
             hands_acts.append(h_act)
 
-        return {
+        return {{
             "farmer": farmer_act,
             "hands": hands_acts,
             "market": market_orders[:10],
-        }
+        }}
 
 
 _champion_brain = DeepChampionAgent()
@@ -516,3 +553,137 @@ _champion_brain = DeepChampionAgent()
 def agent(obs):
     """Kaggle Environments Entry Point."""
     return _champion_brain.act(obs)
+'''
+    with open(MAIN_PY_FILE, "w", encoding="utf-8") as f:
+        f.write(code)
+    print(f"[Export] Crowned and exported new champion '{g.name}' to {MAIN_PY_FILE}!")
+
+
+class MegaEvolver:
+    """Industrial Evolutionary System for +1,000 Matches."""
+    def __init__(self, workers: int = 6):
+        self.arena = Arena(max_workers=workers)
+        self.hof = load_hall_of_fame()
+
+    def run_mega_evolution(self, total_target_games: int = 1000, population_size: int = 10, seeds_per_duel: int = 5):
+        """
+        Runs massive generation-based evolutionary search reaching total_target_games.
+        Each mirror duel with seeds_per_duel runs 2 * seeds_per_duel games (e.g. 10 games).
+        """
+        games_per_candidate = seeds_per_duel * 2
+        candidates_per_gen = population_size - 2
+        games_per_gen = candidates_per_gen * games_per_candidate
+        total_generations = max(5, int(total_target_games // games_per_gen))
+
+        base_seeds = [42, 1039, 2036, 3033, 4030, 5027, 6024, 7021, 8018, 9015, 1123, 2345, 3456, 4567, 5678, 6789]
+
+        # Seed population
+        current_champ = Genome(name="SuperGrandmaster_Base")
+        if self.hof:
+            current_champ = Genome.from_dict(self.hof[-1]["genome"])
+            print(f"[MegaEvolver] Loaded reigning champion '{current_champ.name}' from Hall of Fame.")
+        else:
+            print(f"[MegaEvolver] Initializing from base 28-gene genome.")
+
+        population = [current_champ]
+        for i in range(1, population_size):
+            population.append(mutate(current_champ, mutation_rate=0.35))
+
+        print("=" * 70)
+        print("  INICIANDO MEGA-SIMULADOR INDUSTRIAL (+1,000 PARTIDAS DE AUTO-JUEGO)")
+        print(f"  Objetivo de Partidas: ~{total_generations * games_per_gen:,} ({total_generations} generaciones x {games_per_gen} partidas)")
+        print(f"  Tamaño de Población: {population_size} | Semillas por Duelo: {seeds_per_duel} (Mirror Match x2)")
+        print(f"  Hilos de Ejecución Paralela: {self.arena.max_workers}")
+        print("=" * 70)
+
+        total_simulated = 0
+        all_time_high_score = 0.0
+
+        for gen in range(1, total_generations + 1):
+            t_gen_start = time.perf_counter()
+            round_seeds = base_seeds[(gen % 5): (gen % 5) + seeds_per_duel]
+
+            print(f"\n--- [Generación {gen:02d}/{total_generations:02d}] Evaluando Población ({len(population)} variantes) ---")
+
+            # Champion is population[0]
+            champ = population[0]
+            ranked_candidates = []
+
+            for idx, candidate in enumerate(population[1:], start=1):
+                res = self.arena.duel(candidate, champ, round_seeds)
+                total_simulated += res["total_games"]
+
+                fitness = res["avg_score_a"] + 10000.0 * (res["winrate_a"] - 0.5)
+                ranked_candidates.append({
+                    "genome": candidate,
+                    "res": res,
+                    "fitness": fitness,
+                    "avg_score": res["avg_score_a"],
+                    "winrate": res["winrate_a"],
+                    "margin": res["net_margin"]
+                })
+
+                prefix = "[HOT]" if res["is_a_superior"] else "     "
+                print(f"  {prefix} Var {idx:02d} ({candidate.name[:14]:14s}): Winrate {res['winrate_a']*100:5.1f}% | Media ${res['avg_score_a']:6,.0f} vs ${res['avg_score_b']:6,.0f} (Margen: ${res['net_margin']:+6,.0f})")
+
+            # Sort by fitness
+            ranked_candidates.sort(key=lambda x: x["fitness"], reverse=True)
+            top_candidate = ranked_candidates[0]
+
+            # Check if top candidate defeats champion in confirmation
+            if top_candidate["res"]["is_a_superior"]:
+                print(f"\n  [CHECK] Verificación Profunda del Líder: {top_candidate['genome'].name} vs {champ.name} (8 semillas = 16 partidas)...")
+                verify_seeds = base_seeds[:8]
+                v_res = self.arena.duel(top_candidate["genome"], champ, verify_seeds)
+                total_simulated += v_res["total_games"]
+
+                print(f"  -> Resultado: Winrate {v_res['winrate_a']*100:.1f}% | Margen: ${v_res['net_margin']:+,.0f} | Media: ${v_res['avg_score_a']:,.0f}")
+
+                if v_res["is_a_superior"]:
+                    print(f"  [NEW CHAMPION] ¡NUEVO CAMPEÓN SUPREMO: {top_candidate['genome'].name}!")
+                    champ = top_candidate["genome"]
+                    if v_res["avg_score_a"] > all_time_high_score:
+                        all_time_high_score = v_res["avg_score_a"]
+
+                    # Save record and export
+                    rec = {
+                        "timestamp": time.time(),
+                        "generation": gen,
+                        "genome": champ.to_dict(),
+                        "avg_score": v_res["avg_score_a"],
+                        "net_margin": v_res["net_margin"],
+                        "winrate": v_res["winrate_a"],
+                        "total_games_so_far": total_simulated,
+                    }
+                    self.hof.append(rec)
+                    save_hall_of_fame(self.hof)
+                    export_genome_to_main_py(champ)
+                else:
+                    print(f"  El candidato no superó la confirmación. El campeón {champ.name} se mantiene.")
+            else:
+                print(f"  El campeón {champ.name} retiene el liderazgo en la Generación {gen}.")
+
+            # Next generation breeding:
+            # 1. Elitism: Champ + best candidate survive untouched
+            new_pop = [champ, top_candidate["genome"]]
+
+            # 2. Crossover & Mutate remaining slots
+            fit_parents = [champ, top_candidate["genome"]] + [c["genome"] for c in ranked_candidates[:3]]
+            while len(new_pop) < population_size:
+                p1, p2 = random.sample(fit_parents, 2)
+                child = crossover(p1, p2)
+                if random.random() < 0.6:
+                    child = mutate(child, mutation_rate=0.25)
+                child.name = f"Gen{gen+1}_Ind{len(new_pop)}"
+                new_pop.append(child)
+
+            population = new_pop
+            t_gen_elapsed = time.perf_counter() - t_gen_start
+            print(f"  [Gen {gen:02d} completada en {t_gen_elapsed:.1f}s | Partidas acumuladas: {total_simulated:,}]")
+
+        print("\n" + "=" * 70)
+        print(f"  FIN DEL MEGA-SIMULADOR INDUSTRIAL.")
+        print(f"  Total Partidas Simuladas: {total_simulated:,}")
+        print(f"  Campeón Supremo Actual: '{champ.name}'")
+        print("=" * 70)
+        return champ
