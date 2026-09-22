@@ -142,9 +142,9 @@ El conjunto de datos presenta una arquitectura semi-supervisada:
 
 * [x] Configuración del entorno y arquitectura modular `07_rsna_knee/`.
 * [x] Pipeline de supervisión débil multilingüe clínico (`0.6999` Macro ROC-AUC en Gold Set).
-* [x] Ingeniería de características de series y protocolos MRI.
-* [x] Generación y validación del baseline submission (`baseline_submission.csv`).
-* [ ] **Fase Visión 2.5D / 3D CNN:**
-  * Extracción y selección de cortes clave (Key-Slice Selection) por plano (Sagital, Coronal, Axial).
-  * Backbone convolucional preentrenado (e.g. `convnext_nano` / `resnet34` / `efficientnet`) con pooling de atención multislice.
-  * Notebook de inferencia adaptado al límite de tiempo y al *Efficiency Prize* de Kaggle.
+* [x] Feature engineering tabular de metadatos MRI y extracción de cortes clave.
+* [x] **Pipeline DINOv2 Visual Transformer + Slot Attention:**
+  * Integración del modelo base de visión autosupervisada `DINOv2-small` (`metaresearch/dinov2`).
+  * Ensamble de 20 modelos especializados por diagnóstico (`SlotHead`) con pesos entrenados (`pilkwang/rsna-knee-weights`).
+  * Enrutamiento dinámico por plano anatómico (sagital, coronal, axial) y normalización por rangos de probabilidad.
+  * Automatización del flujo de ejecución y envío a Kaggle con `submit_when_ready.py`.
