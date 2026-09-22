@@ -34,33 +34,33 @@ def submit():
         "-m",
         MESSAGE,
     ]
-    print(f"[*] Submitting version {VERSION} to competition...")
+    print(f"[*] Submitting version {VERSION} to competition...", flush=True)
     res = subprocess.run(cmd, capture_output=True, text=True)
-    print("STDOUT:", res.stdout)
-    print("STDERR:", res.stderr)
+    print("STDOUT:", res.stdout, flush=True)
+    print("STDERR:", res.stderr, flush=True)
     return res.returncode == 0
 
 
 def main():
-    print(f"[*] Monitoring kernel: {KERNEL}")
+    print(f"[*] Monitoring kernel: {KERNEL}", flush=True)
     max_wait = 1800  # 30 mins
     start = time.time()
 
     while time.time() - start < max_wait:
         status_line = check_status()
-        print(f"[{int(time.time() - start)}s] {status_line}")
+        print(f"[{int(time.time() - start)}s] {status_line}", flush=True)
 
         if "COMPLETE" in status_line:
-            print("[+] Kernel completed successfully! Proceeding to submit...")
+            print("[+] Kernel completed successfully! Proceeding to submit...", flush=True)
             success = submit()
             if success:
-                print("[+] Successfully submitted to competition!")
+                print("[+] Successfully submitted to competition!", flush=True)
             else:
-                print("[-] Submission failed, see output above.")
+                print("[-] Submission failed, see output above.", flush=True)
             return
 
         if "ERROR" in status_line or "CANCELLED" in status_line:
-            print("[-] Kernel run ended with error or was cancelled.")
+            print("[-] Kernel run ended with error or was cancelled.", flush=True)
             return
 
         time.sleep(30)
