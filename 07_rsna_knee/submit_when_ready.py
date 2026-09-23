@@ -8,8 +8,8 @@ import sys
 
 KERNEL = "javierhernaez/rsna-knee-baseline-submission"
 COMPETITION = "rsna-knee-abnormality-detection"
-VERSION = "4"
-MESSAGE = "DINOv2 Visual Transformer 20-model ensemble v4"
+VERSION = "5"
+MESSAGE = "Multi-Model Ensemble DINOv2 + RadImageNet + Raptor + CoAtNet v5"
 
 
 def check_status():
