@@ -3,8 +3,8 @@
 [![Kaggle Competition](https://img.shields.io/badge/Kaggle-RSNA_Knee_Abnormality_Detection-20BEFF?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Metric](https://img.shields.io/badge/Metric-Macro_ROC--AUC-success?style=for-the-badge)](https://scikit-learn.org/)
-[![Public Score](https://img.shields.io/badge/Public_Score-0.89100-success?style=for-the-badge)](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection)
-[![Leaderboard](https://img.shields.io/badge/Rank-%232688_/_4230-blue?style=for-the-badge)](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection)
+[![Public Score](https://img.shields.io/badge/Public_Score-0.94200-success?style=for-the-badge)](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection)
+[![Leaderboard](https://img.shields.io/badge/Rank-%23652_/_4284_(Top_15%25)-blue?style=for-the-badge)](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection)
 
 Solución y pipeline reproducible para la competición **RSNA Knee Abnormality Detection AI Challenge (2026)** organizada por la *Radiological Society of North America (RSNA)* en Kaggle.
 

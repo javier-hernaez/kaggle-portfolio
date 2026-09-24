@@ -21,7 +21,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | Multi-Anchor Consensus v8 (Top-3 Anchors + 10F XGB) | ROC-AUC | **`0.94651`** | **#45 / 2.217 (Top 2.0%)** | 🚀 En competición |
 | 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | Ensamble (LR + Ridge + Threshold Opt) | F1-Score | **`0.81336`** | **#214 / 469** | 🚀 En competición |
 | 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Industrial Strategic Agent v3 (Wheat Reserve Fix + Sheep Diversification + Anti-Crash) | Winrate / Coins | **100% WR vs v2 (\$56k - \$66k media)** | *Leaderboard Activo* | 🚀 En competición |
-| 07 | [**RSNA Knee Abnormality Detection**](07_rsna_knee/) | Visión Médica & Transformers (DINOv2 + RadImageNet + Raptor) | Ensamble Multimodelo 20-DINOv2 + Slot Attention | Macro ROC-AUC | **`0.89100`** *(v5 en curso)* | **#2688 / 4.230** | 🚀 En competición |
+| 07 | [**RSNA Knee Abnormality Detection**](07_rsna_knee/) | Visión Médica & Transformers (DINOv2 + RadImageNet + Raptor + CoAtNet) | Grandmaster Ensemble (DINOv2 + RadImageNet + Raptor + CoAtNet + ConvNeXt + Depth-TTA) | Macro ROC-AUC | **`0.94200`** *(v6 en curso)* | **#652 / 4.284 (Top 15%)** | 🚀 En competición |
 
 ---
 
