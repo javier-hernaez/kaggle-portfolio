@@ -138,13 +138,54 @@ El conjunto de datos presenta una arquitectura semi-supervisada:
 
 ---
 
-## 🔮 6. Hoja de Ruta (Roadmap hacia el Top Leaderboard)
+## 🏆 5. Historial de Envíos y Progresión en Leaderboard
 
-* [x] Configuración del entorno y arquitectura modular `07_rsna_knee/`.
-* [x] Pipeline de supervisión débil multilingüe clínico (`0.6999` Macro ROC-AUC en Gold Set).
-* [x] Feature engineering tabular de metadatos MRI y extracción de cortes clave.
-* [x] **Pipeline DINOv2 Visual Transformer + Slot Attention:**
-  * Integración del modelo base de visión autosupervisada `DINOv2-small` (`metaresearch/dinov2`).
-  * Ensamble de 20 modelos especializados por diagnóstico (`SlotHead`) con pesos entrenados (`pilkwang/rsna-knee-weights`).
-  * Enrutamiento dinámico por plano anatómico (sagital, coronal, axial) y normalización por rangos de probabilidad.
-  * Automatización del flujo de ejecución y envío a Kaggle con `submit_when_ready.py`.
+| Versión | Arquitectura / Enfoque | Macro ROC-AUC | Estado | Posición Leaderboard |
+| :---: | :--- | :---: | :---: | :---: |
+| **v2** | Weak Supervision Clinical NLP + Series Priors | `0.500` | Baseline inicial | Exploración |
+| **v3** | Multimodal DICOM Vision Central Slices + Protocol Features | `0.426` | Descartado (inversión de correlaciones) | - |
+| **v4** | DINOv2-small ViT + Multi-Slot Attention (20 checkpoints) | `0.891` | Salto de rendimiento masivo | Top 60% (#2688) |
+| **v5** | Multi-Model Ensemble: DINOv2 + RadImageNet + Raptor + CoAtNet | **`0.942`** | Top tier competitivo | **#652 / 4.284 (Top 15%)** |
+| **v6** | DINOsaur V5 Grandmaster (DINOv2 + Rad + Raptor + CoAtNet + ConvNeXt + Calibrador OOF) | `0.941` | Análisis: calibrador lineal OOF generaba ligero drift | Top 15% |
+| **v7** | **DINOsaur V5 Final:** Speedy Raptors v34 (DINOv2 20ckpts + RadImageNet 10 heads + 4 Raptor views + 4 CoAtNet readers) + Non-Destructive A5 Depth-TTA Residual | *En evaluación* | Estado del arte público | **Objetivo: Top 5-10% (0.945+)** |
+
+---
+
+## 🚀 6. Ejecución Rápida y Reproducción
+
+1. **Verificar o descargar datos:**
+   ```powershell
+   .\.venv\Scripts\python.exe 07_rsna_knee\download_data.py
+   ```
+
+2. **Ejecutar análisis exploratorio (EDA):**
+   ```powershell
+   .\.venv\Scripts\python.exe 07_rsna_knee\src\eda.py
+   ```
+
+3. **Evaluar el extractor de supervisión débil en el Gold Set:**
+   ```powershell
+   .\.venv\Scripts\python.exe 07_rsna_knee\src\report_extractor.py
+   ```
+
+4. **Monitorizar ejecución y auto-envío en Kaggle GPU:**
+   ```powershell
+   .\.venv\Scripts\python.exe 07_rsna_knee\submit_when_ready.py
+   ```
+
+---
+
+## 🔮 7. Arquitectura del Gran Ensamble Multimodal (v7)
+
+* **Backbones de Visión Médica y Auto-Supervisión:**
+  * `DINOv2-small` (`metaresearch/dinov2`): 20 modelos con Slot Attention anatómico para cortes Sagitales, Coronales y Axiales.
+  * `RadImageNet ResNet-50`: Red preentrenada en millones de imágenes médicas con 10 cabezales de atención (`E10`, `E11`, `E13`).
+  * `Raptor CoAtNet` (4 vistas): Modelos RMLP-2 en resoluciones nativas 336px y 384px con enrutamiento de ventanas de alta capacidad.
+  * `CoAtNet Readers` complementarios:
+    - Residual Gated CoAtNet (epochs 4, 6, 8).
+    - D4 Depth-Zone SWA3 (adaptación a tres zonas de profundidad por corte).
+    - Global96 full-width gated reader.
+* **Test-Time Augmentation (Depth-TTA):**
+  - Muestreo diferencial de cortes en bandas `12%-88%` y `15%-85%`.
+  - Normalización de rangos (*Rank Averaging*) por percentil para alinear el orden monótono sin distorsión de calibración.
+  - Inyección residual no destructiva sobre el grafo 0.943 certificado.

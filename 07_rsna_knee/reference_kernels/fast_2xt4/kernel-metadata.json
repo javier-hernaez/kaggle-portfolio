@@ -1,10 +1,11 @@
 {
-  "id": "javierhernaez/rsna-knee-baseline-submission",
-  "title": "RSNA Knee Baseline Submission",
-  "code_file": "rsna_knee_dinosaur_v5_pipeline.ipynb",
+  "id": "jiweiliu/rsna-knee-fast-2xt4-inference",
+  "id_no": 134262775,
+  "title": "RSNA Knee Fast 2xT4 Inference",
+  "code_file": "rsna-knee-fast-2xt4-inference.ipynb",
   "language": "python",
   "kernel_type": "notebook",
-  "is_private": true,
+  "is_private": false,
   "enable_gpu": true,
   "enable_tpu": false,
   "enable_internet": false,
@@ -36,5 +37,7 @@
   ],
   "model_sources": [
     "metaresearch/dinov2/PyTorch/small/1"
-  ]
+  ],
+  "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
+  "machine_shape": "NvidiaTeslaT4"
 }

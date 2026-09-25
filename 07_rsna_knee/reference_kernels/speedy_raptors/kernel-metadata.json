@@ -1,10 +1,11 @@
 {
-  "id": "javierhernaez/rsna-knee-baseline-submission",
-  "title": "RSNA Knee Baseline Submission",
-  "code_file": "rsna_knee_dinosaur_v5_pipeline.ipynb",
+  "id": "mattiaangeli/bend-the-knee-to-speedy-raptors-the-original",
+  "id_no": 134595227,
+  "title": "Bend the Knee to Speedy Raptors-The Original \u2b50\u2b50\u2b50\u2b50\u2b50",
+  "code_file": "bend-the-knee-to-speedy-raptors-the-original.ipynb",
   "language": "python",
   "kernel_type": "notebook",
-  "is_private": true,
+  "is_private": false,
   "enable_gpu": true,
   "enable_tpu": false,
   "enable_internet": false,
@@ -36,5 +37,7 @@
   ],
   "model_sources": [
     "metaresearch/dinov2/PyTorch/small/1"
-  ]
+  ],
+  "docker_image": "gcr.io/kaggle-private-byod/python@sha256:37c64f7dd9c54116ecd1bcc88817c5469b88387388fade02bfa8bf3fc647d461",
+  "machine_shape": "NvidiaTeslaT4"
 }
