@@ -8,8 +8,8 @@ import sys
 
 KERNEL = "javierhernaez/rsna-knee-baseline-submission"
 COMPETITION = "rsna-knee-abnormality-detection"
-VERSION = "7"
-MESSAGE = "DINOsaur V5 Final: Speedy Raptors v34 (DINOv2 + RadImageNet + Raptor + 4xCoAtNet) + No-Train Depth TTA v7"
+VERSION = "8"
+MESSAGE = "DINOsaur V5 v8: Rank-Logit Fusion + Clinical Comorbidity Lift + Repair-v1 CoAt Residual + Synovitis Rad Rescue (0.944+)"
 
 
 def check_status():

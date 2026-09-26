@@ -3,8 +3,8 @@
 [![Kaggle Competition](https://img.shields.io/badge/Kaggle-RSNA_Knee_Abnormality_Detection-20BEFF?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Metric](https://img.shields.io/badge/Metric-Macro_ROC--AUC-success?style=for-the-badge)](https://scikit-learn.org/)
-[![Public Score](https://img.shields.io/badge/Public_Score-0.94200-success?style=for-the-badge)](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection)
-[![Leaderboard](https://img.shields.io/badge/Rank-%23652_/_4284_(Top_15%25)-blue?style=for-the-badge)](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection)
+[![Public Score](https://img.shields.io/badge/Public_Score-0.94300-success?style=for-the-badge)](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection)
+[![Leaderboard](https://img.shields.io/badge/Rank-%23580_/_4284_(Top_13%25)-blue?style=for-the-badge)](https://www.kaggle.com/competitions/rsna-knee-abnormality-detection)
 
 Solución y pipeline reproducible para la competición **RSNA Knee Abnormality Detection AI Challenge (2026)** organizada por la *Radiological Society of North America (RSNA)* en Kaggle.
 
@@ -145,9 +145,10 @@ El conjunto de datos presenta una arquitectura semi-supervisada:
 | **v2** | Weak Supervision Clinical NLP + Series Priors | `0.500` | Baseline inicial | Exploración |
 | **v3** | Multimodal DICOM Vision Central Slices + Protocol Features | `0.426` | Descartado (inversión de correlaciones) | - |
 | **v4** | DINOv2-small ViT + Multi-Slot Attention (20 checkpoints) | `0.891` | Salto de rendimiento masivo | Top 60% (#2688) |
-| **v5** | Multi-Model Ensemble: DINOv2 + RadImageNet + Raptor + CoAtNet | **`0.942`** | Top tier competitivo | **#652 / 4.284 (Top 15%)** |
+| **v5** | Multi-Model Ensemble: DINOv2 + RadImageNet + Raptor + CoAtNet | `0.942` | Top tier competitivo | #652 / 4.284 (Top 15%) |
 | **v6** | DINOsaur V5 Grandmaster (DINOv2 + Rad + Raptor + CoAtNet + ConvNeXt + Calibrador OOF) | `0.941` | Análisis: calibrador lineal OOF generaba ligero drift | Top 15% |
-| **v7** | **DINOsaur V5 Final:** Speedy Raptors v34 (DINOv2 20ckpts + RadImageNet 10 heads + 4 Raptor views + 4 CoAtNet readers) + Non-Destructive A5 Depth-TTA Residual | *En evaluación* | Estado del arte público | **Objetivo: Top 5-10% (0.945+)** |
+| **v7** | DINOsaur V5 Final: Speedy Raptors v34 (DINOv2 20ckpts + RadImageNet + 4xCoAtNet) + Depth-TTA | **`0.943`** | Confirmado en Leaderboard | **#580 / 4.284 (Top 13%)** |
+| **v8** | **DINOsaur V5 SOTA:** Rank-Logit Fusion + Repair-v1 CoAt Residual + Synovitis Rad Rescue + Comorbidity Lift | *En ejecución GPU* | Estado del arte público | **Objetivo: Top 5-10% (0.944 - 0.946)** |
 
 ---
 
@@ -175,17 +176,20 @@ El conjunto de datos presenta una arquitectura semi-supervisada:
 
 ---
 
-## 🔮 7. Arquitectura del Gran Ensamble Multimodal (v7)
+## 🔮 7. Arquitectura del Gran Ensamble Multimodal (v8)
 
 * **Backbones de Visión Médica y Auto-Supervisión:**
-  * `DINOv2-small` (`metaresearch/dinov2`): 20 modelos con Slot Attention anatómico para cortes Sagitales, Coronales y Axiales.
+  * `DINOv2-small` (`metaresearch/dinov2`): 20 modelos con Slot Attention anatómico para cortes Sagitales, Coronales y Axiales (prefix freezing optimizado).
   * `RadImageNet ResNet-50`: Red preentrenada en millones de imágenes médicas con 10 cabezales de atención (`E10`, `E11`, `E13`).
   * `Raptor CoAtNet` (4 vistas): Modelos RMLP-2 en resoluciones nativas 336px y 384px con enrutamiento de ventanas de alta capacidad.
   * `CoAtNet Readers` complementarios:
     - Residual Gated CoAtNet (epochs 4, 6, 8).
     - D4 Depth-Zone SWA3 (adaptación a tres zonas de profundidad por corte).
     - Global96 full-width gated reader.
-* **Test-Time Augmentation (Depth-TTA):**
-  - Muestreo diferencial de cortes en bandas `12%-88%` y `15%-85%`.
-  - Normalización de rangos (*Rank Averaging*) por percentil para alinear el orden monótono sin distorsión de calibración.
-  - Inyección residual no destructiva sobre el grafo 0.943 certificado.
+    - **Repair-v1 CoAtNet:** Inyectado como residuo de diversidad del 15% (`_raptor_repair15.csv`).
+* **Innovaciones Algorítmicas Clave (v8):**
+  1. **Fusión Rank-Logit:** Mapeo de percentiles a espacio logit $z = \log(r / (1 - r))$, combinación ponderada y sigmoide inverso, evitando el aplanamiento de colas de confianza propio del promedio lineal de rangos.
+  2. **Reparación Geométrica A5:** Ordenación física de cortes mediante proyección del vector normal de corte ($IPP \cdot (IOP_{row} \times IOP_{col})$) activada únicamente cuando el `InstanceNumber` DICOM presenta anomalías de monotonicidad.
+  3. **Rescate RadImageNet para Sinovitis:** Calibración específica reduciendo la cuota Raptor/CoAt a 0.55 en Sinovitis, donde RadImageNet exhibe mayor sensibilidad a hipertrofia sinovial.
+  4. **Lift Clínico de Comorbilidad:** Inyección de correlaciones cruzadas observadas en resonancia ortopédica (Contusión $\rightarrow$ Fractura, Artrosis Medial $\rightarrow$ Lateral, Artrosis Lateral $\rightarrow$ Menisco Externo, LCA $\rightarrow$ LCM, Derrame $\rightarrow$ Sinovitis).
+
