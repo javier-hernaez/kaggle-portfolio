@@ -48,7 +48,7 @@ def submit():
 
 def main():
     print(f"[*] Monitoring kernel: {KERNEL}", flush=True)
-    max_wait = 1800  # 30 mins
+    max_wait = 14400  # 4 hours
     start = time.time()
 
     while time.time() - start < max_wait:
@@ -68,7 +68,7 @@ def main():
             print("[-] Kernel run ended with error or was cancelled.", flush=True)
             return
 
-        time.sleep(30)
+        time.sleep(60)
 
 
 if __name__ == "__main__":
