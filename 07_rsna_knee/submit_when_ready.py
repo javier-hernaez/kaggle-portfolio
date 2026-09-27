@@ -10,8 +10,8 @@ from pathlib import Path
 
 KERNEL = "javierhernaez/rsna-knee-baseline-submission"
 COMPETITION = "rsna-knee-abnormality-detection"
-VERSION = "9"
-MESSAGE = "DINOsaur V5 v9: JointLine Raptor Specialist (126 windows, 8-92% span) + 0.943 Anchor Graph"
+VERSION = "10"
+MESSAGE = "DINOsaur V5 v10: JointLine Raptor Specialist (126 windows, 8-92% span) + 0.943 Anchor Graph"
 
 venv_kaggle = Path(sys.executable).parent / ("kaggle.exe" if sys.platform == "win32" else "kaggle")
 KAGGLE_BIN = str(venv_kaggle) if venv_kaggle.exists() else (shutil.which("kaggle") or "kaggle")
