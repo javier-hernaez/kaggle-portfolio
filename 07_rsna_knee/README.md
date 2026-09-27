@@ -148,7 +148,8 @@ El conjunto de datos presenta una arquitectura semi-supervisada:
 | **v5** | Multi-Model Ensemble: DINOv2 + RadImageNet + Raptor + CoAtNet | `0.942` | Top tier competitivo | #652 / 4.284 (Top 15%) |
 | **v6** | DINOsaur V5 Grandmaster (DINOv2 + Rad + Raptor + CoAtNet + ConvNeXt + Calibrador OOF) | `0.941` | Análisis: calibrador lineal OOF generaba ligero drift | Top 15% |
 | **v7** | DINOsaur V5 Final: Speedy Raptors v34 (DINOv2 20ckpts + RadImageNet + 4xCoAtNet) + Depth-TTA | **`0.943`** | Confirmado en Leaderboard | **#580 / 4.284 (Top 13%)** |
-| **v8** | **DINOsaur V5 SOTA:** Rank-Logit Fusion + Repair-v1 CoAt Residual + Synovitis Rad Rescue + Comorbidity Lift | *En ejecución GPU* | Estado del arte público | **Objetivo: Top 5-10% (0.944 - 0.946)** |
+| **v8** | DINOsaur V5: Rank-Logit Fusion + Repair-v1 CoAt Residual + Synovitis Rad Rescue + Comorbidity Lift | `0.942` | Análisis: perturbación global de logits en las 9 patologías no-meniscales causó ligero drift | Top 15% |
+| **v9** | **DINOsaur V5 SOTA:** Grafo Base 0.943 Certificado + **Especialista JointLine Raptor (128 slices, 126 windows, span 8%-92%)** enfocado en meniscos y LCM | *En ejecución GPU* | Estado del arte con preservación no destructiva | **Objetivo: Top 5-10% (0.945+)** |
 
 ---
 
@@ -176,9 +177,9 @@ El conjunto de datos presenta una arquitectura semi-supervisada:
 
 ---
 
-## 🔮 7. Arquitectura del Gran Ensamble Multimodal (v8)
+## 🔮 7. Arquitectura del Gran Ensamble Multimodal (v9)
 
-* **Backbones de Visión Médica y Auto-Supervisión:**
+* **Grafo Base 0.943 Preservado al 100%:**
   * `DINOv2-small` (`metaresearch/dinov2`): 20 modelos con Slot Attention anatómico para cortes Sagitales, Coronales y Axiales (prefix freezing optimizado).
   * `RadImageNet ResNet-50`: Red preentrenada en millones de imágenes médicas con 10 cabezales de atención (`E10`, `E11`, `E13`).
   * `Raptor CoAtNet` (4 vistas): Modelos RMLP-2 en resoluciones nativas 336px y 384px con enrutamiento de ventanas de alta capacidad.
@@ -186,10 +187,11 @@ El conjunto de datos presenta una arquitectura semi-supervisada:
     - Residual Gated CoAtNet (epochs 4, 6, 8).
     - D4 Depth-Zone SWA3 (adaptación a tres zonas de profundidad por corte).
     - Global96 full-width gated reader.
-    - **Repair-v1 CoAtNet:** Inyectado como residuo de diversidad del 15% (`_raptor_repair15.csv`).
-* **Innovaciones Algorítmicas Clave (v8):**
-  1. **Fusión Rank-Logit:** Mapeo de percentiles a espacio logit $z = \log(r / (1 - r))$, combinación ponderada y sigmoide inverso, evitando el aplanamiento de colas de confianza propio del promedio lineal de rangos.
-  2. **Reparación Geométrica A5:** Ordenación física de cortes mediante proyección del vector normal de corte ($IPP \cdot (IOP_{row} \times IOP_{col})$) activada únicamente cuando el `InstanceNumber` DICOM presenta anomalías de monotonicidad.
-  3. **Rescate RadImageNet para Sinovitis:** Calibración específica reduciendo la cuota Raptor/CoAt a 0.55 en Sinovitis, donde RadImageNet exhibe mayor sensibilidad a hipertrofia sinovial.
-  4. **Lift Clínico de Comorbilidad:** Inyección de correlaciones cruzadas observadas en resonancia ortopédica (Contusión $\rightarrow$ Fractura, Artrosis Medial $\rightarrow$ Lateral, Artrosis Lateral $\rightarrow$ Menisco Externo, LCA $\rightarrow$ LCM, Derrame $\rightarrow$ Sinovitis).
+    - Repair-v1 CoAtNet.
+  * **Las 9 patologías no meniscales** (LCA, Artrosis Medial, Lateral, Femoropatelar, Derrame, Sinovitis, Quiste de Baker, Contusión, Fractura) siguen **exactamente la ruta 0.943 certificada**.
+
+* **Innovación Clave (v9) — Especialista JointLine Raptor:**
+  1. **Foco Anatómico en la Interlínea Articular:** Las roturas de menisco medial, menisco lateral y LCM residen estrictamente en la interlínea articular femorotibial. El muestreo general amplio (`[0.02, 0.98]`) añade ruido de diáfisis femoral y tibial.
+  2. **Hiperresolución de Profundidad:** El especialista estrecha el span al intervalo central crítico `8%–92%`, eleva el presupuesto de cortes a **128 cortes** y evalúa **126 ventanas adyacentes** (triplets) con inferencia bidireccional (6/7 forward + 1/7 reverse).
+  3. **Enrutamiento Exclusivo:** Se aplica únicamente a `MCL`, `Medial Meniscus` y `Lateral Meniscus` con $\alpha = 0.14$, protegiendo de cualquier degradación al resto del modelo.
 

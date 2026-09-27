@@ -35,6 +35,7 @@
     "rsna-knee-abnormality-detection"
   ],
   "model_sources": [
+    "metaresearch/dinov2/PyTorch/base/1",
     "metaresearch/dinov2/PyTorch/small/1"
   ]
 }
