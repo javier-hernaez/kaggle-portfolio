@@ -18,10 +18,10 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 01 | [**Titanic: Machine Learning from Disaster**](01_titanic/) | Clasificación Binaria | Woman-Child-Group (WCG) | Accuracy | **`0.81578`** | **#246 / 9.639 (Top 2.5%)** | ✅ Completada |
 | 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | Ensemble (LightGBM + CatBoost) | Accuracy | **`0.80500`** | **#473 / 1.536** | ✅ Completada |
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | Blend (Ridge + Lasso + CB + LGB) | RMSLE | **`0.12589`** | **#943 / 3.178** | ✅ Completada |
-| 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | Multi-Anchor Consensus v8 (Top-3 Anchors + 10F XGB) | ROC-AUC | **`0.94651`** | **#45 / 2.217 (Top 2.0%)** | 🚀 En competición |
+| 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | SOTA Grand Prix & Generator-Aware v10 (20-Engine + GPT2 LogReg + Boundary Shifts) | ROC-AUC | **`0.94676`** | **#15 / 3.420 (Top 0.4% - Gold)** | 🚀 En competición |
 | 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | Ensamble (LR + Ridge + Threshold Opt) | F1-Score | **`0.81336`** | **#214 / 469** | 🚀 En competición |
 | 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Industrial Strategic Agent v3 (Wheat Reserve Fix + Sheep Diversification + Anti-Crash) | Winrate / Coins | **100% WR vs v2 (\$56k - \$66k media)** | *Leaderboard Activo* | 🚀 En competición |
-| 07 | [**RSNA Knee Abnormality Detection**](07_rsna_knee/) | Visión Médica & Transformers | DINOsaur V5 v9: JointLine Raptor Specialist (126 windows, 8-92% span) + 0.943 Anchor Graph | Macro ROC-AUC | **`0.94300`** *(v9 en GPU)* | **#580 / 4.284 (Top 13%)** | 🚀 En competición |
+| 07 | [**RSNA Knee Abnormality Detection**](07_rsna_knee/) | Visión Médica & Transformers | DINOsaur V5 Final: Speedy Raptors v34 (DINOv2 + Rad + Raptor + 4xCoAtNet) | Macro ROC-AUC | **`0.94300`** | **#521 / 4.284 (Top 12%)** | 🚀 En competición |
 
 ---
 
