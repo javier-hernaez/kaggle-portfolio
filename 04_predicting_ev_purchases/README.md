@@ -84,10 +84,11 @@ Donde $\Phi(\cdot)$ representa la función de distribución acumulada de la norm
 | **v4: Nelder-Mead 10F XGB + Pure LGBM Super-Blend**| `0.94630` | `0.94642` | #266 / 2.216 | Top 12% |
 | **v8: Multi-Anchor Consensus (Top-3 Anchors + 10F XGBoost)** | `0.94640` | `0.94651` | #45 / 2.217 | Top 2.0% |
 | **v9: SOTA Calibrated Consensus (Public Split + Boundary Shifts)** | `0.94645` | `0.94654` | #310 / 3.420 | Top 9.0% |
-| **🥇 v10: SOTA Grand Prix & Generator-Aware Consensus** | **`0.94670`** | **`0.94676`** | **#15 / 3.420** | **Top 0.4% (Gold Zone)** |
+| **v10: SOTA Grand Prix & Generator-Aware Consensus** | `0.94670` | `0.94676` | #15 / 3.420 | Top 0.4% (Gold) |
+| **🥇 v11: SOTA Grand Prix v13 OOF Stacking & Multi-Engine Fusion** | **`0.94675`** | **`0.94681`** | **#32 / 3.543** | **Top 0.9% (Gold Tier)** |
 
-*Detalle de la arquitectura campeona v10:*
-* **Ensamble Grand Prix Pit-Stop Multimodelo:** Fusión SLSQP de máxima separación analítica combinando 20 motores de gradient boosting optimizados (`0.94663`), el consenso calibrado v9 (`0.94654`) y el modelo regularizado de regresión logística consciente del generador con tokenización GPT-2 de Paul Bryan Elefante (`0.94640`).
+*Detalle de la arquitectura campeona v11:*
+* **OOF Stacking & Fusión Pit-Stop Multi-Motor:** Agregación optimizada de 24 modelos de alta fidelidad que incorpora la última evolución de modelos ponderados por covarianza de separación de errores, regularización de árboles y regresión logística por tokens GPT-2.
 * **Diversidad Ortogonal Real ($\rho \approx 0.992$):** La integración de modelos lineales/tokenizados con árboles rompe el techo de saturación de correlación $>0.999$, desbloqueando un salto masivo en discriminación de umbral.
 * **Ajustes Físicos Deterministas de Frontera:** Corrección exacta sobre 3.733 casos de singularidades deterministas del generador sintético (cliff de ingresos $\ge \$170.537$, zona muerta de ingresos $\$31.004 - \$41.970$, corte de commute $\ge 83\text{km}$ y condición de spike en $\$30.000$).
 * **Resolución Analítica de Empates (DGP Chris Deotte):** Inyección de logit analítico $\epsilon = 10^{-7}$ de la fórmula fundamental de compra para garantizar cero empates exactos (exactamente 286.571 valores únicos continuos ordenados).
