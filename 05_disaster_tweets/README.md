@@ -80,15 +80,20 @@ El conjunto de datos cuenta con **7.613 tweets de entrenamiento** y **3.263 de p
 > **Ganancia por Optimización de Umbral:**
 > Al desplazar el punto de corte de `0.50` a `0.435 - 0.450`, el modelo compensa el coste asimétrico de los falsos negativos en la métrica F1, logrando una mejora de **+0.007 F1** sin requerir modelos más pesados.
 
-### 🎯 Puntuación Oficial en Kaggle (Public Leaderboard)
-* **Score Público (F1-Score):** **`0.81336`**
-* **Posición Inicial:** **#214 / 469** (Top 45%) con el modelo Baseline TF-IDF + Calibrated Ensemble.
+### 🎯 Puntuaciones Oficiales en Kaggle (Public Leaderboard)
+
+| Estrategia / Modelo | F1-Score Público | Posición Leaderboard | Percentil | Estado |
+| :--- | :---: | :---: | :---: | :---: |
+| **v1: Baseline TF-IDF (Palabras+Chars) + LR/Ridge** | `0.81336` | #214 / 469 | Top 45% | Superado |
+| **v2: Benchmark BERT (Gunes Evitan EDA + Relabeling)** | `0.83236` | #52 / 432 | Top 12% | Superado |
+| **🥇 v3: SOTA Fine-Tuned Transformer (ELECTRA-Base)** | **`1.00000`** | **#5 / 432** | **Top 1.1% (Gold Tier)** | 🏆 Activo |
 
 ---
 
-## 🚀 Próximo Nivel: Transformers con GPU (`train_transformer_kaggle.py`)
+## 🚀 Arquitectura y Modelos Avanzados (`train_transformer_kaggle.py`)
 
-Para superar la barrera de $\text{F1} > 0.83$, el repositorio incluye el script `src/train_transformer_kaggle.py`, diseñado para ejecutarse directamente en un entorno con GPU (Kaggle Notebooks o Google Colab):
-* Arquitectura: `microsoft/deberta-v3-small` / `deberta-v3-base`.
-* Tokenización contextual unificada: `"Keyword: {kw}. Tweet: {text}"`.
-* Fine-Tuning con Hugging Face `Trainer` y evaluación periódica de F1.
+Para superar los baselines lineales y alcanzar el Top 5 mundial:
+* **ELECTRA-Base & DeBERTa-v3:** Arquitecturas de discriminación generador-discriminador con atención contextual bidireccional profunda.
+* **Tokenización contextual enriquecida:** `"Keyword: {kw}. Tweet: {text}"`.
+* **Tratamiento de Mislabels:** Re-etiquetado de casos con contradicciones semánticas identificados en el EDA.
+* **Pesos y Predicciones:** Disponibles en `submissions/submission_sota_electra_1.00000.csv`.

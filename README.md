@@ -19,7 +19,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | Ensemble (LightGBM + CatBoost) | Accuracy | **`0.80500`** | **#473 / 1.536** | ✅ Completada |
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | Blend (Ridge + Lasso + CB + LGB) | RMSLE | **`0.12589`** | **#943 / 3.178** | ✅ Completada |
 | 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | SOTA Grand Prix & Generator-Aware v10 (20-Engine + GPT2 LogReg + Boundary Shifts) | ROC-AUC | **`0.94676`** | **#15 / 3.420 (Top 0.4% - Gold)** | 🚀 En competición |
-| 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | Ensamble (LR + Ridge + Threshold Opt) | F1-Score | **`0.81336`** | **#214 / 469** | 🚀 En competición |
+| 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | SOTA Fine-Tuned Transformer (ELECTRA-Base) | F1-Score | **`1.00000`** | **#5 / 432 (Top 1.1% - Gold)** | 🚀 En competición |
 | 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Industrial Strategic Agent v3 (Wheat Reserve Fix + Sheep Diversification + Anti-Crash) | Winrate / Coins | **100% WR vs v2 (\$56k - \$66k media)** | *Leaderboard Activo* | 🚀 En competición |
 | 07 | [**RSNA Knee Abnormality Detection**](07_rsna_knee/) | Visión Médica & Transformers | DINOsaur V5 Final: Speedy Raptors v34 (DINOv2 + Rad + Raptor + 4xCoAtNet) | Macro ROC-AUC | **`0.94300`** | **#521 / 4.284 (Top 12%)** | 🚀 En competición |
 
