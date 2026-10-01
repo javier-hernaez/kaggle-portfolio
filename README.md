@@ -16,7 +16,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | # | Competición | Tipo | Mejor Modelo | Métrica | Score Público (Kaggle) | Posición / Percentil | Estado |
 | :-: | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
 | 01 | [**Titanic: Machine Learning from Disaster**](01_titanic/) | Clasificación Binaria | Woman-Child-Group (WCG) | Accuracy | **`0.81578`** | **#246 / 9.639 (Top 2.5%)** | ✅ Completada |
-| 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | Ensemble (LightGBM + CatBoost) | Accuracy | **`0.80500`** | **#473 / 1.536** | ✅ Completada |
+| 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | SOTA Tri-Engine (CatBoost + LightGBM + XGBoost) 10-Fold | Accuracy | **`0.80780`** | **#248 / 1.589 (Top 15.6%)** | ✅ Completada |
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | Blend (Ridge + Lasso + CB + LGB) | RMSLE | **`0.12589`** | **#943 / 3.178** | ✅ Completada |
 | 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | SOTA Grand Prix v11 (OOF Stacking & Multi-Engine Fusion) | ROC-AUC | **`0.94681`** | **#32 / 3.543 (Top 0.9% - Gold)** | 🚀 En competición |
 | 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | SOTA Fine-Tuned Transformer (ELECTRA-Base) | F1-Score | **`1.00000`** | **#5 / 432 (Top 1.1% - Gold)** | 🚀 En competición |
