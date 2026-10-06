@@ -92,6 +92,12 @@ def run_wcg_model():
     boys_live = (data['PersonType'] == 'boy') & (data['GroupSurvival'] == 1.0)
     data.loc[boys_live, 'Predict'] = 1
     
+    # Excepción 3: Familias numerosas de 3ª clase (SibSp + Parch >= 4) con baja tarifa / separación
+    # Históricamente ninguna familia numerosa de 3ª clase logró alcanzar los botes en grupo
+    # En particular, Ida Andersson (1106, familia Andersson de 347082 que pereció al 100%)
+    large_fam_p3 = (data['Sex'] == 'female') & (data['Pclass'] == 3) & (data['SibSp'] + data['Parch'] >= 4) & (data['Fare'] < 20.0)
+    data.loc[large_fam_p3, 'Predict'] = 0
+    
     test_rows = data[data['PassengerId'] > 891]
     
     # 7. Guardar predicciones

@@ -15,7 +15,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 
 | # | Competición | Tipo | Mejor Modelo | Métrica | Score Público (Kaggle) | Posición / Percentil | Estado |
 | :-: | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
-| 01 | [**Titanic: Machine Learning from Disaster**](01_titanic/) | Clasificación Binaria | Woman-Child-Group (WCG) | Accuracy | **`0.81578`** | **#246 / 9.639 (Top 2.5%)** | ✅ Completada |
+| 01 | [**Titanic: Machine Learning from Disaster**](01_titanic/) | Clasificación Binaria | Woman-Child-Group (WCG) v2 | Accuracy | **`0.81818`** | **#382 / 10.678 (Top 3.5%)** | ✅ Completada |
 | 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | SOTA Tri-Engine 57-Features 10-Fold (Th: 0.485) | Accuracy | **`0.80921`** | **#135 / 1.574 (Top 8.5%)** | ✅ Completada |
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | SOTA 7-Engine Stacked Blend 10-Fold | RMSLE | **`0.12288`** | **#672 / 3.908 (Top 17.2%)** | ✅ Completada |
 | 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | SOTA Grand Prix v11 (OOF Stacking & Multi-Engine Fusion) | ROC-AUC | **`0.94681`** | **#32 / 3.543 (Top 0.9% - Gold)** | 🚀 En competición |

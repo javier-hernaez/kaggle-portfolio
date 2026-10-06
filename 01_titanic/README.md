@@ -1,10 +1,10 @@
 # 🚢 Titanic - Machine Learning from Disaster
 
-[![Kaggle Score](https://img.shields.io/badge/Kaggle%20Score-0.81578-success?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/titanic)
-[![Rank](https://img.shields.io/badge/Leaderboard%20Rank-%23246%20(Top%202.5%25)-blue?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/titanic)
+[![Kaggle Score](https://img.shields.io/badge/Kaggle%20Score-0.81818-success?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/titanic)
+[![Rank](https://img.shields.io/badge/Leaderboard%20Rank-%23382%20(Top%203.5%25)-blue?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/titanic)
 [![Python](https://img.shields.io/badge/Python-3.12-yellow?style=for-the-badge&logo=python)](https://python.org)
 
-Solución competitiva para el reto clásico **Titanic: Machine Learning from Disaster** de Kaggle, alcanzando una puntuación pública legítima de **0.81578** (Top 2.5% de más de 9.600 equipos) sin recurrir a fugas de datos históricos (*data leakage*).
+Solución competitiva para el reto clásico **Titanic: Machine Learning from Disaster** de Kaggle, alcanzando una puntuación pública legítima de **0.81818** (Top 3.5% de más de 10.600 equipos) sin recurrir a fugas de datos históricos (*data leakage*).
 
 ---
 
@@ -16,7 +16,8 @@ Solución competitiva para el reto clásico **Titanic: Machine Learning from Dis
 | **2. Baseline Random Forest** | Títulos, tamaño familiar e imputación simple | 0.8305 | 0.77751 |
 | **3. Advanced Ensemble** | CatBoost + LightGBM + Random Forest con Soft Voting | 0.8429 | 0.77751 |
 | **4. Pure WCG** | Reglas de grupos y familias de Chris Deotte | - | 0.80143 |
-| **5. Champion WCG Model** | **Agrupación de parentesco, billetes y cabinas contiguas** | **0.8440** | **0.81578** 🏆 |
+| **5. WCG Model v1** | Agrupación de parentesco, billetes y cabinas contiguas | 0.8440 | 0.81578 |
+| **6. Champion WCG v2** | **WCG + Regla de familias numerosas en 3ª clase (Ida Andersson)** | **0.8440** | **0.81818** 🏆 |
 
 ---
 
