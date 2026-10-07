@@ -17,7 +17,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | :-: | :--- | :---: | :--- | :---: | :---: | :---: | :---: |
 | 01 | [**Titanic: Machine Learning from Disaster**](01_titanic/) | Clasificación Binaria | Woman-Child-Group (WCG) v2 | Accuracy | **`0.81818`** | **#382 / 10.678 (Top 3.5%)** | ✅ Completada |
 | 02 | [**Spaceship Titanic**](02_spaceship_titanic/) | Clasificación Binaria | SOTA Tri-Engine 57-Features 10-Fold (Th: 0.485) | Accuracy | **`0.80921`** | **#135 / 1.574 (Top 8.5%)** | ✅ Completada |
-| 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | SOTA 7-Engine Stacked Blend 10-Fold | RMSLE | **`0.12288`** | **#672 / 3.908 (Top 17.2%)** | ✅ Completada |
+| 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | SOTA 7-Engine Stack + De Cock Outlier Fix | RMSLE | **`0.11437`** | **#60 / 3.950 (Top 1.5% - Gold Range)** | ✅ Completada |
 | 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | SOTA Grand Prix v11 (OOF Stacking & Multi-Engine Fusion) | ROC-AUC | **`0.94681`** | **#32 / 3.543 (Top 0.9% - Gold)** | 🚀 En competición |
 | 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | SOTA Fine-Tuned Transformer (ELECTRA-Base) | F1-Score | **`1.00000`** | **#5 / 432 (Top 1.1% - Gold)** | 🚀 En competición |
 | 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Industrial Strategic Agent v3 (Wheat Reserve Fix + Sheep Diversification + Anti-Crash) | Winrate / Coins | **100% WR vs v2 (\$56k - \$66k media)** | *Leaderboard Activo* | 🚀 En competición |

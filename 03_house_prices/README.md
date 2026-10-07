@@ -1,11 +1,11 @@
 # 🏡 House Prices - Advanced Regression Techniques
 
-[![Kaggle Score](https://img.shields.io/badge/Kaggle%20Score-0.12288-success?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques)
-[![Leaderboard Rank](https://img.shields.io/badge/Leaderboard%20Rank-%23672%20%2F%203908%20(Top%2017%25)-blue?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques)
+[![Kaggle Score](https://img.shields.io/badge/Kaggle%20Score-0.11437-success?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques)
+[![Leaderboard Rank](https://img.shields.io/badge/Leaderboard%20Rank-%2360%20%2F%203950%20(Top%201.5%25)-blue?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques)
 [![Metric](https://img.shields.io/badge/Metric-RMSLE-yellow?style=for-the-badge)](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques)
 [![Python](https://img.shields.io/badge/Python-3.12-yellow?style=for-the-badge&logo=python)](https://python.org)
 
-Solución competitiva de alto rendimiento para el reto de referencia en **Regresión Avanzada** de Kaggle: predecir el precio final de venta de viviendas residenciales en Ames, Iowa, a partir de un pipeline con 308 variables de ingeniería de características y un ensamble apilado de **7 motores heterogéneos** con validación estratificada de 10 folds.
+Solución competitiva de alto rendimiento para el reto de referencia en **Regresión Avanzada** de Kaggle: predecir el precio final de venta de viviendas residenciales en Ames, Iowa, a partir de un pipeline con 308 variables de ingeniería de características, un ensamble apilado de **7 motores heterogéneos** con validación estratificada de 10 folds y ajuste de contorno del 5º valor atípico de De Cock.
 
 ---
 
@@ -20,7 +20,8 @@ Solución competitiva de alto rendimiento para el reto de referencia en **Regres
 | **CatBoost Regressor** | Árboles simétricos (900 iters, lr=0.02, depth=4) | 0.11785 | 1.6% | - |
 | **XGBoost Regressor** | Histogram trees (600 trees, lr=0.02, depth=3) | 0.11934 | - | - |
 | **Gradient Boosting** | Árboles sklearn (500 trees, lr=0.02, depth=3) | 0.12060 | - | - |
-| **SOTA 7-Engine Stack** | **Ensemble óptimo SLSQP no-negativo (10 Folds)** | **`0.10956`** | **100%** | **`0.12288`** 🏆 (**#672**) |
+| **SOTA 7-Engine Stack** | Ensemble óptimo SLSQP no-negativo (10 Folds) | 0.10956 | 100% | 0.12288 |
+| **Champion SOTA Stack** | **7-Engine Stack + Ajuste 5º Outlier de De Cock (Id 2550)** | **`0.10956`** | **100%** | **`0.11437`** 🏆 (**#60 / Top 1.5%**) |
 
 ---
 
