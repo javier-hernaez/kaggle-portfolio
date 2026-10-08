@@ -20,7 +20,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 03 | [**House Prices: Advanced Regression**](03_house_prices/) | Regresión Continua | SOTA 7-Engine Stack + De Cock Outlier Fix | RMSLE | **`0.11437`** | **#60 / 3.950 (Top 1.5% - Gold Range)** | ✅ Completada |
 | 04 | [**Predicting EV Purchases (s6e9)**](04_predicting_ev_purchases/) | Clasificación Binaria | SOTA Grand Prix v11 (OOF Stacking & Multi-Engine Fusion) | ROC-AUC | **`0.94681`** | **#32 / 3.543 (Top 0.9% - Gold)** | 🚀 En competición |
 | 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | SOTA Fine-Tuned Transformer (ELECTRA-Base) | F1-Score | **`1.00000`** | **#5 / 432 (Top 1.1% - Gold)** | 🚀 En competición |
-| 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Industrial Strategic Agent v3 (Wheat Reserve Fix + Sheep Diversification + Anti-Crash) | Winrate / Coins | **100% WR vs v2 (\$56k - \$66k media)** | *Leaderboard Activo* | 🚀 En competición |
+| 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Grandmaster Agent v10 (Supreme Synthesis & Dynamic Arbitrage) | Elo / Score | **`573.3`** | **Leaderboard Activo** | 🚀 En competición |
 | 07 | [**RSNA Knee Abnormality Detection**](07_rsna_knee/) | Visión Médica & Transformers | DINOsaur V5 Final: Speedy Raptors v34 (DINOv2 + Rad + Raptor + 4xCoAtNet) | Macro ROC-AUC | **`0.94300`** | **#521 / 4.284 (Top 12%)** | 🚀 En competición |
 
 ---

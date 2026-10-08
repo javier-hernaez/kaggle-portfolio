@@ -1,6 +1,7 @@
 # 🌾 Kaggriculture: Simulación y Estrategia Económica de Granjas
 
-[![Kaggle](https://img.shields.io/badge/Kaggle-Competition-20BEFF?style=for-the-badge&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/kaggriculture)
+[![Kaggle Score](https://img.shields.io/badge/Kaggle%20Score-573.3-success?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/kaggriculture)
+[![Leaderboard](https://img.shields.io/badge/Leaderboard-Active%20Simulation-blue?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/kaggriculture)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Simulation](https://img.shields.io/badge/Type-Agent_Simulation-success?style=for-the-badge)](https://github.com/Kaggle/kaggle-environments)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
