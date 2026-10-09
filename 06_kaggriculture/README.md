@@ -1,23 +1,35 @@
 # 🌾 Kaggriculture: Simulación y Estrategia Económica de Granjas
 
-[![Kaggle Score](https://img.shields.io/badge/Kaggle%20Score-573.3-success?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/kaggriculture)
-[![Leaderboard](https://img.shields.io/badge/Leaderboard-Active%20Simulation-blue?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/kaggriculture)
+[![Kaggle Score](https://img.shields.io/badge/Kaggle%20Score-573.3%20Elo-success?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/kaggriculture)
+[![Leaderboard](https://img.shields.io/badge/Leaderboard-Final%20Evaluation%20Phase-blue?style=for-the-badge&logo=kaggle)](https://www.kaggle.com/competitions/kaggriculture)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Simulation](https://img.shields.io/badge/Type-Agent_Simulation-success?style=for-the-badge)](https://github.com/Kaggle/kaggle-environments)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
 Solución y arquitectura de agente estratégico para la competición oficial de Kaggle **Kaggriculture** (*Featured Competition*, \$50,000 USD en premios). Dos granjeros compiten simultáneamente durante una temporada de 30 días (720 turnos) para maximizar sus monedas mediante el cultivo, cría de ganado, gestión de jornaleros y venta en un mercado dinámico de oferta y demanda.
 
+El agente actual en producción es **Grandmaster Agent v11 Titan** (`main.py`), fruto de la optimización genética y auto-juego (*self-play*) masivo a través de más de 1,000 partidas simuladas en el módulo `mega_simulator`.
+
 ---
 
-## 📊 Resumen de Rendimiento (Benchmark Local)
+## 📊 Resumen de Rendimiento (Benchmark Local & Head-to-Head)
 
-| Enfrentamiento | Partidas | Victorias Agente | Victorias Rival | Tasa de Victoria | Monedas Medias Agente | Monedas Medias Rival | Margen Medio |
+### 1. Duelos Espejo (*Mirror Duels*) vs Versiones Anteriores
+Evaluación balanceada (intercambiando Jugador 0 y Jugador 1 en cada semilla para eliminar ventaja de turno inicial):
+
+| Enfrentamiento | Partidas Espejo | Victorias v11 Titan | Victorias Rival | Tasa Victoria v11 | Media v11 Titan | Media Rival | Margen Neto Medio |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **IndustrialAgent v3 vs Industrial v2** | 6 | **6** | 0 | **100.0%** | **\$56,066** | \$23,305 | **+\$32,761** |
-| **IndustrialAgent v3 vs Heuristic v1** | 6 | **6** | 0 | **100.0%** | **\$59,673** | \$6,552 | **+\$53,121** |
-| **IndustrialAgent v2 vs Heuristic v1** | 6 | **6** | 0 | **100.0%** | **\$31,457** | \$8,562 | +\$22,895 |
-| **HeuristicAgent v1 vs Starter Baseline** | 6 | **6** | 0 | **100.0%** | **\$5,311** | \$3,321 | +\$1,990 |
+| **v11 Titan vs v10 Supreme** | 40 | **30** | 10 | **75.0%** | **\$56,263** | \$54,844 | **+\$1,419** |
+| **v11 Titan vs v8 Champion (573.3 Elo)** | 20 | **16** | 4 | **80.0%** | **\$55,378** | \$53,906 | **+\$1,472** |
+| **v11 Titan vs v6 Squad Leader** | 40 | **22** | 18 | **55.0%** | **\$57,801** | \$57,714 | **+\$87** |
+
+### 2. Torneos Oficiales vs Agentes Baseline Históricos (720 turnos completos)
+
+| Enfrentamiento | Partidas | Victorias v11 Titan | Victorias Rival | Tasa de Victoria | Monedas Medias v11 | Monedas Medias Rival | Puntuación Máxima |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **v11 Titan vs Industrial v3** | 6 | **6** | 0 | **100.0%** | **\$67,788** | \$30,243 | **\$101,289** |
+| **v11 Titan vs Heuristic v1** | 4 | **4** | 0 | **100.0%** | **\$75,373** | \$5,699 | **\$100,838** |
+| **v11 Titan vs Starter Baseline** | 4 | **4** | 0 | **100.0%** | **\$84,453** | \$3,601 | **\$97,091** |
 
 ---
 
@@ -53,52 +65,48 @@ $$P(inv) = \text{base} \pm \text{amp} \cdot f(|inv - I_0|)$$
 
 ---
 
-## 🧠 Arquitectura de la Solución (`HeuristicAgent v1`)
+## 🧬 Arquitectura de la Solución: Grandmaster Agent v11 Titan
 
-El agente implementa una arquitectura modular con toma de decisiones jerárquica en tiempo real:
+El agente opera mediante un cromosoma estratégico de 28 parámetros evolucionados en co-evolución competitiva:
 
 ```mermaid
 flowchart TD
-    A[Observación del Turno] --> B[Analizador de Mercado y Tiendas]
-    A --> C[Gestor de Cuadrantes y Terreno]
-    B --> D[Selector de Cultivo Óptimo]
-    C --> E[Asignador de Tareas para Unidades]
+    A[Observación del Turno] --> B[Sinergia con Tiendas del Pueblo]
+    A --> C[Gestor de Rebaño y Alimento]
+    B --> D[Arbitraje de Mercado con Umbrales Dinámicos]
+    C --> E[Especialización de Cuadrillas: Husbandry vs Agriculture]
     
-    subgraph Acciones de Mercado
-        D --> F1[Venta Inmediata de Cobertizo]
-        D --> F2[Compra de Semillas Viables]
-        C --> F3[Desbloqueo NE si Liquidez > $1,400]
-        C --> F4[Contratación de Jornaleros en Hora 0]
+    subgraph Sincronización y Economía
+        B --> F1["Fresa Boost (+10 si IceCream/Smoothie)"]
+        B --> F2["Ovejas Boost (+2 si Yarn Store)"]
+        D --> F3["Throttle (<60% precio base) & Burst (>=120%)"]
+        C --> F4["Reserva de Trigo 2x (Anti-inanición garantizada)"]
     end
     
-    subgraph Acciones de Campo
-        E --> G1[Cosecha en Pico de Maduración]
-        E --> G2[Riego Diario Obligatorio]
-        E --> G3[Siembra en Casillas Libres]
-        E --> G4[Deshierbe de Maleza]
-        E --> G5[Pathfinding Manhattan hacia Objetivos]
+    subgraph Coordinación Multi-Unidad
+        E --> G1["Cuadrilla Ganadera (2-3 unidades con mutex de cobertizo)"]
+        E --> G2["Cuadrilla Agrícola (Siembra de 50 Fresas perennes + Riego)"]
+        E --> G3["Reclamo de casillas para cero colisiones"]
     end
     
     subgraph Protocolo de Liquidación
-        A --> H{¿Turno >= 696?}
-        H -- Sí --> I[Cesar Siembra + Cosechar Todo + Venta Total en Cobertizo]
+        A --> H{"¿Día >= 29 o Pasos <= 18?"}
+        H -- Sí --> I["Depósito de animales + Cosecha y Venta Total"]
     end
 ```
 
-### Principales Innovaciones del Agente:
-1. **Planificación de Tareas Priorizada:**
-   - Prioridad 4: Cosechar cultivos en madurez máxima (`age >= max_yield_day`).
-   - Prioridad 3: Regar plantas pendientes (`watered_today == False`).
-   - Prioridad 2: Sembrar en casillas libres accesibles.
-   - Prioridad 1: Deshierbar casillas infectadas con maleza (`DIG`).
-2. **Coordinación Multi-Unidad:**
-   - Empleo del granjero principal y jornaleros contratados (`hands`) con reclamo de casillas para evitar colisiones y duplicación de acciones.
-   - Contratación de mano de obra barata (\$1 y \$2 por jornalero según la serie de Fibonacci) en la hora 0 de cada día.
-3. **Expansión Territorial:**
-   - Desbloqueo del cuadrante NE (\$1,000) cuando la liquidez supera los \$1,400 antes del día 20, duplicando el área de siembra a 50 casillas.
-4. **Protocolo Fin de Temporada (Liquidación Total):**
-   - A partir del día 28 cesa la siembra de cultivos lentos.
-   - En las últimas 24 horas se cosecha todo el campo y se canaliza al cobertizo para liquidación masiva en mercado, ya que los productos no vendidos al turno 720 otorgan \$0.
+### Innovaciones Clave de v11 Titan:
+1. **Reserva de Trigo 2x (Seguridad Alimentaria Total):**
+   - En la versión v10, una reducción experimental a 1x provocaba esporádica inanición animal. La v11 Titan restablece `wheat_reserve_mult = 2`, garantizando que ninguna vaca u oveja deje de producir leche o lana.
+2. **Distribución Óptima de Rebaño (11 Vacas, 3 Ovejas con ratio 2.5):**
+   - Maximiza el flujo constante de Leche (\$160 base) mientras retiene suficiente Lana (\$200 base) para capturar subidas cuando abre la tienda de lana.
+3. **Motor Perenne de 50 Fresas con Sinergia Urbana:**
+   - Si abren heladerías o smoothie shops en el pueblo, el objetivo de fresas escala automáticamente a 60 plantas.
+4. **Arbitraje Estricto Anti-Colapso:**
+   - Ventas reducidas al 50% cuando el precio está por debajo del 60% del valor base, permitiendo que la demanda de la ciudad recupere las cotizaciones.
+   - Ventas aceleradas (+2 unidades) cuando el precio supera el 120% del valor base.
+5. **Escalado de Jornaleros por Fases:**
+   - 6 trabajadores en fase temprana (días 1-5), 8 trabajadores en fase intermedia (días 6-9), y 11 trabajadores en fase de plena producción (días 10-28).
 
 ---
 
@@ -107,49 +115,55 @@ flowchart TD
 ```text
 06_kaggriculture/
 ├── README.md                 # Esta documentación técnica
-├── main.py                   # Agente autónomo autocontenido para envío a Kaggle
+├── main.py                   # Agente autónomo v11 Titan para envío a Kaggle
 ├── evaluate.py               # Benchmark de simulación contra baselines
-├── submit.py                 # Script de validación y envío a Kaggle API
+├── submit.py                 # Script de validación local y envío a Kaggle API
+│
+├── mega_simulator/           # Motor de evolución genética y duelos masivos (+1,000 partidas)
+│   ├── agent_genome.py       # Cromosoma de 28 parámetros y generador de agentes
+│   ├── arena.py              # Arena multiprocessing de duelos espejo
+│   ├── evolver.py            # Algoritmo genético con crossover, mutación y elitismo
+│   ├── hall_of_fame.json     # Registro histórico de genomas campeones
+│   └── run_mega_sim.py       # CLI de simulación masiva y benchmarks
 │
 ├── simulator/                # Motor de simulación autónomo (zero-dependency)
-│   ├── __init__.py
 │   ├── engine.py             # Reglas oficiales, mercado, turnos y refresco diario
 │   └── battle.py             # Ejecutor de partidas 1v1 y torneos con métricas
 │
-└── src/                      # Código fuente modular
-    ├── __init__.py
-    ├── heuristic_agent.py    # Implementación del agente estratégico
-    └── starter_baseline.py   # Agente baseline oficial de Kaggle (Carrot Loop)
+└── src/                      # Agentes de referencia
+    ├── heuristic_agent.py    # Agente heurístico v1
+    ├── industrial_agent.py   # Agente industrial v3
+    └── starter_baseline.py   # Agente baseline oficial de Kaggle
 ```
 
 ---
 
 ## 🚀 Guía de Uso y Comandos
 
-### 1. Ejecutar el Benchmark de Evaluación Local
-Ejecuta torneos de simulación completos de 720 turnos midiendo velocidad y tasa de victorias:
+### 1. Ejecutar el Benchmark Histórico Completo
+Ejecuta torneos de simulación completos de 720 turnos midiendo velocidad y tasa de victorias contra todos los baselines:
 
 ```powershell
-.\.venv\Scripts\python.exe 06_kaggriculture\evaluate.py
+.\.venv\Scripts\python.exe 06_kaggriculture\mega_simulator\run_mega_sim.py --benchmark
 ```
 
-### 2. Enviar el Agente a Kaggle Leaderboard
+### 2. Ejecutar Simulación Genética de Auto-Juego
+Simula partidas multiprocessing de co-evolución competitiva:
+
+```powershell
+.\.venv\Scripts\python.exe 06_kaggriculture\mega_simulator\run_mega_sim.py --total-games 500 --pop-size 8 --workers 6
+```
+
+### 3. Validar y Enviar a Kaggle
 El script `submit.py` ejecuta una verificación local de 72 pasos antes de enviar `main.py` mediante la API de Kaggle:
 
 ```powershell
-.\.venv\Scripts\python.exe 06_kaggriculture\submit.py "Heuristic Strategic Agent v1"
+.\.venv\Scripts\python.exe 06_kaggriculture\submit.py "Grandmaster Agent v11 Titan"
 ```
+*(Nota: Kaggle ha cerrado la recepción de nuevos envíos para la competición Kaggriculture de cara a la evaluación final del torneo round-robin oficial).*
 
-### 3. Consultar Estado de Envíos y Episodios en Kaggle CLI
+### 4. Consultar Estado de Envíos y Episodios en Kaggle CLI
 ```powershell
 .\.venv\Scripts\kaggle.exe competitions submissions kaggriculture
 ```
 
----
-
-## 📈 Hoja de Ruta y Próximas Mejoras (v2)
-
-- [ ] **Modelo de Predicción de Precios Dinámico:** Anticipar saturaciones de mercado y vender en picos antes del colapso de precios.
-- [ ] **Ganadería Intensiva:** Incorporar coops de ocas (huevos con demanda urbana fija) y pastos de vacas/ovejas con rotación de trigo y colecta de fertilizante.
-- [ ] **Fertilización Óptima:** Usar el fertilizante acumulado de animales para duplicar el rendimiento de cultivos de alto valor (melones y zanahorias en pet cafes).
-- [ ] **Pathfinding A\* con Evasión de Obstáculos:** Optimizar los movimientos de granjeros y jornaleros minimizando pasos ociosos.
