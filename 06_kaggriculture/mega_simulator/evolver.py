@@ -1,4 +1,4 @@
-﻿import json
+import json
 import os
 import sys
 import time
@@ -501,7 +501,7 @@ class DeepChampionAgent:
         # 6. Wheat Feed Procurement
         needed_feed = (total_animals + animals_in_shed) * {g.wheat_reserve_mult}
         current_wheat = shed.get("WHEAT", 0)
-        if (total_animals + animals_in_shed) > 0 and current_wheat < needed_feed and money >= 100 and len(market_orders) < 9:
+        if not is_endgame_liquidation and day < 29 and (total_animals + animals_in_shed) > 0 and current_wheat < needed_feed and money >= 100 and len(market_orders) < 9:
             buy_wheat_amt = min(8, needed_feed - current_wheat + 2)
             if buy_wheat_amt > 0:
                 market_orders.append(["BUY_PRODUCT", "WHEAT", buy_wheat_amt])
@@ -509,7 +509,7 @@ class DeepChampionAgent:
 
         # 7. Seed Purchases
         chosen_crop = self.select_crop(day, remaining_days, money, strawberry_count, eff_target_strawberries)
-        if chosen_crop and remaining_days > 2 and len(market_orders) < 9:
+        if not is_endgame_liquidation and day < 28 and chosen_crop and remaining_days > 2 and len(market_orders) < 9:
             current_count = seeds.get(chosen_crop, 0)
             max_cap = 25 if chosen_crop == "STRAWBERRY" else 8
             if current_count < max_cap:
