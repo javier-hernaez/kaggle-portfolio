@@ -19,7 +19,8 @@ Evaluación balanceada (intercambiando Jugador 0 y Jugador 1 en cada semilla par
 
 | Enfrentamiento | Partidas Espejo | Victorias v11 Titan | Victorias Rival | Tasa Victoria v11 | Media v11 Titan | Media Rival | Margen Neto Medio |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **v11 Titan vs v11 Base (Endgame Churn Fix)** | 40 | **37** | 3 | **92.5%** | **\$58,353** | \$57,910 | **+\$443** |
+| **v11 Titan (Fertilizer Engine) vs v11 Base** | 40 | **30** | 10 | **75.0%** | **\$61,121** | \$59,820 | **+\$1,301** |
+| **v11 Titan vs v11 Proto (Endgame Churn Fix)** | 40 | **37** | 3 | **92.5%** | **\$58,353** | \$57,910 | **+\$443** |
 | **v11 Titan vs v10 Supreme** | 40 | **30** | 10 | **75.0%** | **\$56,263** | \$54,844 | **+\$1,419** |
 | **v11 Titan vs v8 Champion (573.3 Elo)** | 20 | **16** | 4 | **80.0%** | **\$55,378** | \$53,906 | **+\$1,472** |
 | **v11 Titan vs v6 Squad Leader** | 40 | **22** | 18 | **55.0%** | **\$57,801** | \$57,714 | **+\$87** |
@@ -28,9 +29,9 @@ Evaluación balanceada (intercambiando Jugador 0 y Jugador 1 en cada semilla par
 
 | Enfrentamiento | Partidas | Victorias v11 Titan | Victorias Rival | Tasa de Victoria | Monedas Medias v11 | Monedas Medias Rival | Puntuación Máxima |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **v11 Titan vs Industrial v3** | 6 | **6** | 0 | **100.0%** | **\$68,218** | \$30,245 | **\$101,740** |
-| **v11 Titan vs Heuristic v1** | 4 | **4** | 0 | **100.0%** | **\$75,786** | \$5,700 | **\$101,238** |
-| **v11 Titan vs Starter Baseline** | 4 | **4** | 0 | **100.0%** | **\$84,870** | \$3,602 | **\$97,507** |
+| **v11 Titan vs Industrial v3** | 6 | **6** | 0 | **100.0%** | **\$69,977** | \$29,495 | **\$99,002** |
+| **v11 Titan vs Heuristic v1** | 4 | **4** | 0 | **100.0%** | **\$74,438** | \$6,033 | **\$99,325** |
+| **v11 Titan vs Starter Baseline** | 4 | **4** | 0 | **100.0%** | **\$95,174** | \$3,564 | **\$105,703** *(Récord)* |
 
 ---
 
@@ -108,6 +109,8 @@ flowchart TD
    - Ventas aceleradas (+2 unidades) cuando el precio supera el 120% del valor base.
 5. **Escalado de Jornaleros por Fases:**
    - 6 trabajadores en fase temprana (días 1-5), 8 trabajadores en fase intermedia (días 6-9), y 11 trabajadores en fase de plena producción (días 10-28).
+6. **Fertilización Continua de Fresas Perennes (Multiplicador 2x de Cosecha):**
+   - Las cuadrillas agrícolas recogen dinámicamente el fertilizante generado a diario por el ganado y lo aplican sistemáticamente a las plantas de fresas a lo largo de toda la temporada (días 5 a 26), duplicando su rendimiento por ciclo a 2 fresas (\$120+ base cada una) y elevando la media a \$95,174 y el récord absoluto a **\$105,703**.
 
 ---
 

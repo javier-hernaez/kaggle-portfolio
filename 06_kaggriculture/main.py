@@ -178,15 +178,16 @@ class DeepChampionAgent:
                                 shared_state["animal_pickup_claimed"] = True
                                 return ["PICKUP", "SHEEP", 1], (ux, uy)
 
-            if role == "AGRICULTURE" and day <= 6 and inv.get("FERTILIZER", 0) == 0 and shed.get("FERTILIZER", 0) > 0:
-                has_unfert_melons = any(
+            if role == "AGRICULTURE" and not is_endgame and day <= 26 and inv.get("FERTILIZER", 0) == 0 and shed.get("FERTILIZER", 0) > 0:
+                has_unfert = any(
                     isinstance(farm["tiles"][y][x], dict)
-                    and farm["tiles"][y][x].get("crop") == "MELON"
+                    and farm["tiles"][y][x].get("crop") in ("MELON", "STRAWBERRY")
                     and farm["tiles"][y][x].get("fertilized_until_day", -1) < day
                     for y in range(board_size) for x in range(board_size)
                 )
-                if has_unfert_melons:
-                    return ["PICKUP", "FERTILIZER", 2], (ux, uy)
+                if has_unfert:
+                    take_fert = min(2, shed.get("FERTILIZER", 0))
+                    return ["PICKUP", "FERTILIZER", take_fert], (ux, uy)
 
         # --- 2. Current Tile Actions ---
         if isinstance(tile, dict):
@@ -213,7 +214,7 @@ class DeepChampionAgent:
                 peak = age >= c_data.get("max_yield_day", 99)
                 if (peak or is_endgame) and tile.get("yield_units", 0) > 0:
                     return ["HARVEST"], (ux, uy)
-                if crop == "MELON" and inv.get("FERTILIZER", 0) > 0 and tile.get("fertilized_until_day", -1) < day:
+                if crop in ("MELON", "STRAWBERRY") and inv.get("FERTILIZER", 0) > 0 and tile.get("fertilized_until_day", -1) < day:
                     return ["FERTILIZE"], (ux, uy)
                 if not tile.get("watered_today", False):
                     return ["WATER"], (ux, uy)
@@ -318,7 +319,7 @@ class DeepChampionAgent:
                             prio = 10
                         elif not t.get("watered_today", False):
                             prio = 8
-                        elif t.get("crop") == "MELON" and inv.get("FERTILIZER", 0) > 0 and t.get("fertilized_until_day", -1) < day:
+                        elif t.get("crop") in ("MELON", "STRAWBERRY") and inv.get("FERTILIZER", 0) > 0 and t.get("fertilized_until_day", -1) < day:
                             prio = 7
                     elif t is None and (x, y) not in PASTURE_LOCATIONS and remaining_days > 1:
                         prio = 5
