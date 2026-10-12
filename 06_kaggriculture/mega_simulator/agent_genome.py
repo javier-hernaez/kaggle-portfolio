@@ -272,7 +272,7 @@ class DeepGrandmasterAgent:
             if inv.get("FERTILIZER", 0) >= 3 or inv.get("MILK", 0) >= 3 or inv.get("WOOL", 0) >= 2 or inv.get("STRAWBERRY", 0) >= 4:
                 return ["DROP"], (ux, uy)
 
-            if role == "HUSBANDRY" and inv.get("WHEAT", 0) == 0 and shed.get("WHEAT", 0) > 0:
+            if not is_endgame and role == "HUSBANDRY" and inv.get("WHEAT", 0) == 0 and shed.get("WHEAT", 0) > 0:
                 has_unfed = any(
                     isinstance(farm["tiles"][y][x], dict)
                     and "animal" in farm["tiles"][y][x]
@@ -309,9 +309,11 @@ class DeepGrandmasterAgent:
         # --- 2. Current Tile Actions ---
         if isinstance(tile, dict):
             if "animal" in tile:
-                if not tile.get("fed_today", False) and inv.get("WHEAT", 0) > 0:
+                if is_endgame and tile.get("yield_units", 0) > 0:
+                    return ["HARVEST"], (ux, uy)
+                if not is_endgame and not tile.get("fed_today", False) and inv.get("WHEAT", 0) > 0:
                     return ["FEED"], (ux, uy)
-                if not tile.get("cared_today", False):
+                if not is_endgame and not tile.get("cared_today", False):
                     return ["CARE"], (ux, uy)
                 if tile.get("yield_units", 0) > 0:
                     return ["HARVEST"], (ux, uy)
@@ -333,7 +335,7 @@ class DeepGrandmasterAgent:
                     return ["HARVEST"], (ux, uy)
                 if crop in ("MELON", "STRAWBERRY") and inv.get("FERTILIZER", 0) > 0 and tile.get("fertilized_until_day", -1) < day:
                     return ["FERTILIZE"], (ux, uy)
-                if not tile.get("watered_today", False):
+                if not is_endgame and not tile.get("watered_today", False):
                     return ["WATER"], (ux, uy)
 
             if tile.get("kind") == "WEED":
@@ -344,7 +346,7 @@ class DeepGrandmasterAgent:
                 return ["BUILD_PASTURE"], (ux, uy)
 
         if tile is None and (ux, uy) not in claimed_tiles and (ux, uy) not in PASTURE_LOCATIONS:
-            if _get_quadrant(ux, uy, board_size) in unlocked:
+            if _get_quadrant(ux, uy, board_size) in unlocked and not is_endgame:
                 best_crop = self.select_crop(day, remaining_days, farm["money"], shared_state.get("strawberries", 0), target_strawberries)
                 if best_crop and seeds.get(best_crop, 0) > 0:
                     claimed_tiles.add((ux, uy))
@@ -374,16 +376,18 @@ class DeepGrandmasterAgent:
                     if step_dir:
                         return [step_dir], best_target
 
-            has_unfed = any(
-                isinstance(farm["tiles"][y][x], dict)
-                and "animal" in farm["tiles"][y][x]
-                and not farm["tiles"][y][x].get("fed_today", False)
-                for y in range(board_size) for x in range(board_size)
-            )
-            if has_unfed and inv.get("WHEAT", 0) == 0 and shed.get("WHEAT", 0) > 0:
-                step_to_shed = _find_step((ux, uy), SHED_CENTER, board_size)
-                if step_to_shed:
-                    return [step_to_shed], SHED_CENTER
+            # Fix: Do not walk to shed for wheat in endgame
+            if not is_endgame:
+                has_unfed = any(
+                    isinstance(farm["tiles"][y][x], dict)
+                    and "animal" in farm["tiles"][y][x]
+                    and not farm["tiles"][y][x].get("fed_today", False)
+                    for y in range(board_size) for x in range(board_size)
+                )
+                if has_unfed and inv.get("WHEAT", 0) == 0 and shed.get("WHEAT", 0) > 0:
+                    step_to_shed = _find_step((ux, uy), SHED_CENTER, board_size)
+                    if step_to_shed:
+                        return [step_to_shed], SHED_CENTER
 
             for y in range(board_size):
                 for x in range(board_size):
@@ -394,9 +398,9 @@ class DeepGrandmasterAgent:
                         prio = -1
                         if t.get("yield_units", 0) > 0:
                             prio = 10
-                        elif not t.get("fed_today", False) and inv.get("WHEAT", 0) > 0:
+                        elif not is_endgame and not t.get("fed_today", False) and inv.get("WHEAT", 0) > 0:
                             prio = 9
-                        elif not t.get("cared_today", False):
+                        elif not is_endgame and not t.get("cared_today", False):
                             prio = 8
                         elif t.get("fertilizer_available", False):
                             prio = 7
@@ -434,11 +438,11 @@ class DeepGrandmasterAgent:
                         age = day - t["planted_day"]
                         if (age >= c_data["max_yield_day"] or is_endgame) and t.get("yield_units", 0) > 0:
                             prio = 10
-                        elif not t.get("watered_today", False):
+                        elif not is_endgame and not t.get("watered_today", False):
                             prio = 8
-                        elif t.get("crop") in ("MELON", "STRAWBERRY") and inv.get("FERTILIZER", 0) > 0 and t.get("fertilized_until_day", -1) < day:
+                        elif not is_endgame and t.get("crop") in ("MELON", "STRAWBERRY") and inv.get("FERTILIZER", 0) > 0 and t.get("fertilized_until_day", -1) < day:
                             prio = 7
-                    elif t is None and (x, y) not in PASTURE_LOCATIONS and remaining_days > 1:
+                    elif not is_endgame and t is None and (x, y) not in PASTURE_LOCATIONS and remaining_days > 1:
                         prio = 5
                     elif isinstance(t, dict) and t.get("kind") == "WEED":
                         prio = 2
@@ -506,7 +510,8 @@ class DeepGrandmasterAgent:
 
         # 2. Price-Aware Sales
         is_endgame_liquidation = (day >= 29 and hour >= 16) or (remaining_steps <= 12)
-        wheat_reserve = (total_animals + animals_in_shed) * self.g.wheat_reserve_mult
+        reserve_mult = 1 if day >= 29 else self.g.wheat_reserve_mult
+        wheat_reserve = (total_animals + animals_in_shed) * reserve_mult
 
         sell_schedule = [
             ("FERTILIZER", self.g.batch_fertilizer),
@@ -580,7 +585,7 @@ class DeepGrandmasterAgent:
                 money -= 400
 
         # 6. Wheat Feed Procurement
-        needed_feed = (total_animals + animals_in_shed) * self.g.wheat_reserve_mult
+        needed_feed = (total_animals + animals_in_shed) * reserve_mult
         current_wheat = shed.get("WHEAT", 0)
         if not is_endgame_liquidation and day < 29 and (total_animals + animals_in_shed) > 0 and current_wheat < needed_feed and money >= 100 and len(market_orders) < 9:
             buy_wheat_amt = min(8, needed_feed - current_wheat + 2)
@@ -609,7 +614,7 @@ class DeepGrandmasterAgent:
         }
 
         total_units = 1 + len(farm.get("hands", []))
-        husbandry_count = 2 if total_animals <= 6 else 3
+        husbandry_count = 2 if total_animals <= 5 else (3 if total_animals <= 9 else 4)
 
         farmer_role = "HUSBANDRY"
         farmer_act, _ = self.plan_unit_turn(0, farm["farmer"], farmer_role, farm, private, day, hour, step, claimed_tiles, shared_state, eff_target_strawberries)

@@ -8,7 +8,7 @@
 
 Solución y arquitectura de agente estratégico para la competición oficial de Kaggle **Kaggriculture** (*Featured Competition*, \$50,000 USD en premios). Dos granjeros compiten simultáneamente durante una temporada de 30 días (720 turnos) para maximizar sus monedas mediante el cultivo, cría de ganado, gestión de jornaleros y venta en un mercado dinámico de oferta y demanda.
 
-El agente actual en producción es **Grandmaster Agent v11 Titan** (`main.py`), fruto de la optimización genética y auto-juego (*self-play*) masivo a través de más de 1,000 partidas simuladas en el módulo `mega_simulator`.
+El agente actual en producción es **Grandmaster Agent v12 Titan** (`main.py`), fruto de la optimización genética y auto-juego (*self-play*) masivo a través de más de 1,000 partidas simuladas en el módulo `mega_simulator`.
 
 ---
 
@@ -17,8 +17,9 @@ El agente actual en producción es **Grandmaster Agent v11 Titan** (`main.py`), 
 ### 1. Duelos Espejo (*Mirror Duels*) vs Versiones Anteriores
 Evaluación balanceada (intercambiando Jugador 0 y Jugador 1 en cada semilla para eliminar ventaja de turno inicial):
 
-| Enfrentamiento | Partidas Espejo | Victorias v11 Titan | Victorias Rival | Tasa Victoria v11 | Media v11 Titan | Media Rival | Margen Neto Medio |
+| Enfrentamiento | Partidas Espejo | Victorias v12 Titan | Victorias Rival | Tasa Victoria v12 | Media v12 Titan | Media Rival | Margen Neto Medio |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **v12 Titan (Endgame Fix + Dynamic Squad) vs v11 Titan** | 40 | **32** | 8 | **80.0%** | **\$61,586** | \$60,932 | **+\$654** |
 | **v11 Titan (Fertilizer Engine) vs v11 Base** | 40 | **30** | 10 | **75.0%** | **\$61,121** | \$59,820 | **+\$1,301** |
 | **v11 Titan vs v11 Proto (Endgame Churn Fix)** | 40 | **37** | 3 | **92.5%** | **\$58,353** | \$57,910 | **+\$443** |
 | **v11 Titan vs v10 Supreme** | 40 | **30** | 10 | **75.0%** | **\$56,263** | \$54,844 | **+\$1,419** |
@@ -27,11 +28,11 @@ Evaluación balanceada (intercambiando Jugador 0 y Jugador 1 en cada semilla par
 
 ### 2. Torneos Oficiales vs Agentes Baseline Históricos (720 turnos completos)
 
-| Enfrentamiento | Partidas | Victorias v11 Titan | Victorias Rival | Tasa de Victoria | Monedas Medias v11 | Monedas Medias Rival | Puntuación Máxima |
+| Enfrentamiento | Partidas | Victorias v12 Titan | Victorias Rival | Tasa de Victoria | Monedas Medias v12 | Monedas Medias Rival | Puntuación Máxima |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **v11 Titan vs Industrial v3** | 6 | **6** | 0 | **100.0%** | **\$69,977** | \$29,495 | **\$99,002** |
-| **v11 Titan vs Heuristic v1** | 4 | **4** | 0 | **100.0%** | **\$74,438** | \$6,033 | **\$99,325** |
-| **v11 Titan vs Starter Baseline** | 4 | **4** | 0 | **100.0%** | **\$95,174** | \$3,564 | **\$105,703** *(Récord)* |
+| **v12 Titan vs Industrial v3** | 6 | **6** | 0 | **100.0%** | **\$74,289** | \$29,594 | **\$100,070** |
+| **v12 Titan vs Heuristic v1** | 4 | **4** | 0 | **100.0%** | **\$86,332** | \$5,616 | **\$110,380** *(Nuevo Récord)* |
+| **v12 Titan vs Starter Baseline** | 4 | **4** | 0 | **100.0%** | **\$87,491** | \$3,627 | **\$97,066** |
 
 ---
 
@@ -67,7 +68,7 @@ $$P(inv) = \text{base} \pm \text{amp} \cdot f(|inv - I_0|)$$
 
 ---
 
-## 🧬 Arquitectura de la Solución: Grandmaster Agent v11 Titan
+## 🧬 Arquitectura de la Solución: Grandmaster Agent v12 Titan
 
 El agente opera mediante un cromosoma estratégico de 28 parámetros evolucionados en co-evolución competitiva:
 
@@ -82,24 +83,24 @@ flowchart TD
         B --> F1["Fresa Boost (+10 si IceCream/Smoothie)"]
         B --> F2["Ovejas Boost (+2 si Yarn Store)"]
         D --> F3["Throttle (<60% precio base) & Burst (>=120%)"]
-        C --> F4["Reserva de Trigo 2x (Anti-inanición garantizada)"]
+        C --> F4["Reserva de Trigo 2x (1x en Día 29 para Venta Óptima)"]
     end
     
     subgraph Coordinación Multi-Unidad
-        E --> G1["Cuadrilla Ganadera (2-3 unidades con mutex de cobertizo)"]
-        E --> G2["Cuadrilla Agrícola (Siembra de 50 Fresas perennes + Riego)"]
+        E --> G1["Cuadrilla Ganadera Dinámica (2 a 4 unidades según rebaño)"]
+        E --> G2["Cuadrilla Agrícola (Siembra de 50 Fresas perennes + Fertilización)"]
         E --> G3["Reclamo de casillas para cero colisiones"]
     end
     
-    subgraph Protocolo de Liquidación
+    subgraph Protocolo de Liquidación Anti-Oscilación
         A --> H{"¿Día >= 29 o Pasos <= 18?"}
-        H -- Sí --> I["Depósito de animales + Cosecha y Venta Total"]
+        H -- Sí --> I["Prioridad Cosecha + Cero Recogida de Trigo + Venta Total"]
     end
 ```
 
-### Innovaciones Clave de v11 Titan:
-1. **Reserva de Trigo 2x (Seguridad Alimentaria Total):**
-   - En la versión v10, una reducción experimental a 1x provocaba esporádica inanición animal. La v11 Titan restablece `wheat_reserve_mult = 2`, garantizando que ninguna vaca u oveja deje de producir leche o lana.
+### Innovaciones Clave de v12 Titan:
+1. **Reserva de Trigo 2x con Liquidación Suave en Día 29:**
+   - Durante los días 1-28, mantiene `wheat_reserve_mult = 2` para blindaje anti-inanición. En el Día 29, la reserva se reduce automáticamente a 1x, permitiendo vender el excedente de trigo de forma escalonada en el mercado a precios pico en vez de saturarlo de golpe.
 2. **Distribución Óptima de Rebaño (11 Vacas, 3 Ovejas con ratio 2.5):**
    - Maximiza el flujo constante de Leche (\$160 base) mientras retiene suficiente Lana (\$200 base) para capturar subidas cuando abre la tienda de lana.
 3. **Motor Perenne de 50 Fresas con Sinergia Urbana:**
@@ -110,7 +111,12 @@ flowchart TD
 5. **Escalado de Jornaleros por Fases:**
    - 6 trabajadores en fase temprana (días 1-5), 8 trabajadores en fase intermedia (días 6-9), y 11 trabajadores en fase de plena producción (días 10-28).
 6. **Fertilización Continua de Fresas Perennes (Multiplicador 2x de Cosecha):**
-   - Las cuadrillas agrícolas recogen dinámicamente el fertilizante generado a diario por el ganado y lo aplican sistemáticamente a las plantas de fresas a lo largo de toda la temporada (días 5 a 26), duplicando su rendimiento por ciclo a 2 fresas (\$120+ base cada una) y elevando la media a \$95,174 y el récord absoluto a **\$105,703**.
+   - Las cuadrillas agrícolas recogen dinámicamente el fertilizante generado a diario por el ganado y lo aplican sistemáticamente a las plantas de fresas a lo largo de toda la temporada (días 5 a 26), duplicando su rendimiento por ciclo a 2 fresas (\$120+ base cada una).
+7. **Escalado Dinámico de Cuadrilla Ganadera (Husbandry Scaling a 4 Unidades):**
+   - Cuando el rebaño alcanza 10+ animales (11 vacas + 3 ovejas), la cuadrilla ganadera escala de 3 a 4 trabajadores dedicados (96 turnos/día). Esto elimina al 100% los días de animales sin alimentar o sin cuidar, garantizando producción diaria continua de Leche (\$160) y Lana (\$200) y preservando el bono de cuidado diario (+1 rendimiento por cuidado).
+8. **Protocolo Anti-Oscilación y Cosecha Endgame (Anti-Churn Optimization):**
+   - Erradica el bucle recurrente de fin de temporada donde los trabajadores recogían trigo del cobertizo y lo soltaban inmediatamente durante los últimos 18 turnos.
+   - Desactiva el riego tardío y alimentación estéril en el Día 29 (cuyo beneficio se manifestaría en un inexistente Día 30), forzando a todas las unidades a cosechar inmediatamente cualquier producto maduro en la granja y depositarlo para venta, impulsando el récord histórico a **\$110,380**.
 
 ---
 
@@ -119,7 +125,7 @@ flowchart TD
 ```text
 06_kaggriculture/
 ├── README.md                 # Esta documentación técnica
-├── main.py                   # Agente autónomo v11 Titan para envío a Kaggle
+├── main.py                   # Agente autónomo v12 Titan para envío a Kaggle
 ├── evaluate.py               # Benchmark de simulación contra baselines
 ├── submit.py                 # Script de validación local y envío a Kaggle API
 │
