@@ -428,17 +428,20 @@ class DeepChampionAgent:
                 ][:10],
             }}
 
-        # 2. Price-Aware Sales
+        # 2. Price-Aware Sales with Anti-Clog Shed Protection
         is_endgame_liquidation = (day >= 29 and hour >= 16) or (remaining_steps <= 12)
         reserve_mult = 1 if day >= 29 else {g.wheat_reserve_mult}
         wheat_reserve = (total_animals + animals_in_shed) * reserve_mult
+
+        shed_total = sum(shed.values())
+        shed_is_crowded = shed_total >= 65  # Anti-Clog threshold
 
         sell_schedule = [
             ("FERTILIZER", {g.batch_fertilizer}),
             ("MILK", {g.batch_milk}),
             ("WOOL", {g.batch_wool}),
             ("STRAWBERRY", {g.batch_strawberry}),
-            ("MELON", {g.batch_melon}),
+            ("MELON", 12 if shed.get("MELON", 0) >= 20 else {g.batch_melon}),
             ("WHEAT", 15),
             ("CARROT", 15),
             ("TOMATO", 10),
@@ -453,7 +456,9 @@ class DeepChampionAgent:
             curr_price = market_prices.get(prod, BASE_PRICES.get(prod, 50))
             base_p = BASE_PRICES.get(prod, 50)
 
-            if not is_endgame_liquidation and curr_price < base_p * {g.price_throttle_ratio}:
+            if shed_is_crowded and prod in ("MELON", "FERTILIZER", "STRAWBERRY", "MILK", "WOOL"):
+                effective_slice = max(base_slice, base_slice + 4)
+            elif not is_endgame_liquidation and curr_price < base_p * {g.price_throttle_ratio}:
                 effective_slice = max(1, base_slice // 2)
             elif curr_price >= base_p * {g.price_burst_ratio}:
                 effective_slice = base_slice + 2
