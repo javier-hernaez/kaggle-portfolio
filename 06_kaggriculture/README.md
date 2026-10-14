@@ -69,36 +69,47 @@ $$P(inv) = \text{base} \pm \text{amp} \cdot f(|inv - I_0|)$$
 
 ---
 
-## 🧬 Arquitectura de la Solución: Grandmaster Agent v13 Titan
+## 🧬 Arquitectura de la Solución: 4-Tier Clean Modular Architecture
 
-El agente opera mediante un cromosoma estratégico de 28 parámetros evolucionados en co-evolución competitiva:
+El agente abandona la arquitectura monolítica procedural en favor de una **Arquitectura Limpia en 4 Capas Desacopladas (`GrandmasterAgent`)**, altamente mantenible, extensible y con paridad matemática estricta del 100%:
 
 ```mermaid
 flowchart TD
-    A[Observación del Turno] --> B[Sinergia con Tiendas del Pueblo]
-    A --> C[Gestor de Rebaño y Alimento]
-    B --> D[Arbitraje de Mercado con Umbrales Dinámicos]
-    C --> E[Especialización de Cuadrillas: Husbandry vs Agriculture]
-    
-    subgraph Sincronización y Economía
-        B --> F1["Fresa Boost (+10 si IceCream/Smoothie)"]
-        B --> F2["Ovejas Boost (+2 si Yarn Store)"]
-        D --> F3["Throttle (<60% precio base) & Burst (>=120%)"]
-        D --> F4["Anti-Clog Buffer: Shed >= 65 desatasca Melones/Leche/Lana"]
-        C --> F5["Reserva de Trigo 2x (1x en Día 29 para Venta Óptima)"]
+    subgraph Capa 1: Percepcion y Modelo de Dominio
+        RAW[Observacion Bruta de Kaggle] --> WS["WorldState (Percepcion)"]
+        WS --> METRICS["Metricas: Inventario, Capacidad Cobertizo (Anti-Clog >= 65), Tiendas Urbanas, Estado Rebaño"]
     end
-    
-    subgraph Coordinación Multi-Unidad
-        E --> G1["Cuadrilla Ganadera Dinámica (2 a 4 unidades según rebaño)"]
-        E --> G2["Cuadrilla Agrícola (Siembra de 50 Fresas perennes + Fertilización)"]
-        E --> G3["Reclamo de casillas para cero colisiones"]
+
+    subgraph Capa 2: Motor Macroeconomico
+        WS --> ME["MacroEconomy (Economia Estrategica)"]
+        ME --> M1["Arbitraje y Ventas (Anti-Clog Shed Buffer + Throttle/Burst)"]
+        ME --> M2["Contratacion Escalonada de Jornaleros (6 -> 8 -> 11)"]
+        ME --> M3["Expansion Controlada de Cuadrantes (NE / SW)"]
+        ME --> M4["Optimizacion de Rebaño (11 Vacas + 3 Ovejas)"]
+        ME --> M5["Reserva y Compra de Trigo para Alimento"]
+        ME --> M6["Planificacion de Siembra y Sinergia Urbana"]
     end
-    
-    subgraph Protocolo de Liquidación Anti-Oscilación
-        A --> H{"¿Día >= 29 o Pasos <= 18?"}
-        H -- Sí --> I["Prioridad Cosecha + Cero Recogida de Trigo + Venta Total"]
+
+    subgraph Capa 3: Controlador Tactico de Unidades
+        WS --> UC["UnitController (Accion y Movimiento)"]
+        UC --> U1["Protocolo Anti-Oscilacion y Liquidacion de Cobertizo"]
+        UC --> U2["Interaccion Prioritaria con Cobertizo (Carga/Descarga)"]
+        UC --> U3["Acciones sobre Casilla Actual (Cosecha, Riego, Ordeño, Cuidado, Abono)"]
+        UC --> U4["Navegacion Manhattan y Reserva Dinamica de Casillas"]
+    end
+
+    subgraph Capa 4: Fachada de Orquestacion
+        ME --> GMA["GrandmasterAgent (Orquestador Central)"]
+        UC --> GMA
+        GMA --> ENTRY["agent(obs) - Entry Point Oficial Kaggle"]
     end
 ```
+
+### Componentes de la Arquitectura:
+1. **`WorldState` (Capa de Percepción):** Extrae y estructura las observaciones sin efectos secundarios. Precalcula ocupación del cobertizo (`shed_is_crowded`), reservas de alimento requeridas, rendimientos agrícolas y estados de alerta.
+2. **`MacroEconomy` (Motor Macroeconómico):** Administra el mercado de forma autónoma. Planifica la liquidez, compra de parcelas, selección de cultivos según fase estacional y sinergias comerciales urbanas.
+3. **`UnitController` (Controlador Táctico):** Ejecuta la máquina de estados de cada jornalero y el granjero, resolviendo asignaciones locales, evitando colisiones de trabajo sobre la misma casilla (`claimed_tiles`) y priorizando tareas críticas de supervivencia y recolección.
+4. **`GrandmasterAgent` (Orquestador):** Conecta las tres capas, administra la cuadrilla especializada (ganadería vs agricultura) y garantiza cumplimiento riguroso con la interfaz estándar de Kaggle Environments.
 
 ### Innovaciones Clave de v13 Titan:
 1. **Reserva de Trigo 2x con Liquidación Suave en Día 29:**
@@ -156,21 +167,32 @@ flowchart TD
 
 ## 🚀 Guía de Uso y Comandos
 
-### 1. Ejecutar el Benchmark Histórico Completo
-Ejecuta torneos de simulación completos de 720 turnos midiendo velocidad y tasa de victorias contra todos los baselines:
+### 1. Ejecutar el Benchmark de Torneo Oficial
+Ejecuta duelos espejo balanceados (intercambiando P0 y P1 para eliminar sesgo de turno) contra todos los baselines o contra rivales específicos:
+
+```powershell
+# Evaluar contra todos los baselines (Industrial v3, Heuristic v1, Starter Baseline)
+.\.venv\Scripts\python.exe 06_kaggriculture\evaluate.py --vs all --games 6
+
+# Evaluar específicamente duelos espejo (Self-Play P0 vs P1)
+.\.venv\Scripts\python.exe 06_kaggriculture\evaluate.py --vs mirror --games 10
+```
+
+### 2. Ejecutar el Benchmark Histórico Completo en Mega-Simulator
+Ejecuta torneos de simulación masivos completos de 720 turnos:
 
 ```powershell
 .\.venv\Scripts\python.exe 06_kaggriculture\mega_simulator\run_mega_sim.py --benchmark
 ```
 
-### 2. Ejecutar Simulación Genética de Auto-Juego
+### 3. Ejecutar Simulación Genética de Auto-Juego
 Simula partidas multiprocessing de co-evolución competitiva:
 
 ```powershell
 .\.venv\Scripts\python.exe 06_kaggriculture\mega_simulator\run_mega_sim.py --total-games 500 --pop-size 8 --workers 6
 ```
 
-### 3. Validar y Enviar a Kaggle
+### 4. Validar y Enviar a Kaggle
 El script `submit.py` ejecuta una verificación local de 72 pasos antes de enviar `main.py` mediante la API de Kaggle:
 
 ```powershell
@@ -178,7 +200,7 @@ El script `submit.py` ejecuta una verificación local de 72 pasos antes de envia
 ```
 *(Nota: Kaggle ha cerrado la recepción de nuevos envíos para la competición Kaggriculture de cara a la evaluación final del torneo round-robin oficial).*
 
-### 4. Consultar Estado de Envíos y Episodios en Kaggle CLI
+### 5. Consultar Estado de Envíos y Episodios en Kaggle CLI
 ```powershell
 .\.venv\Scripts\kaggle.exe competitions submissions kaggriculture
 ```
