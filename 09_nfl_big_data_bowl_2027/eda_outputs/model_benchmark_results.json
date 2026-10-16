@@ -1,0 +1,29 @@
+{
+    "wr_separation": {
+        "n_samples": 105,
+        "baseline_r2": 0.11751793273265665,
+        "baseline_rmse": 0.423558132881959,
+        "kinematic_r2": 0.14752686199333576,
+        "kinematic_rmse": 0.41629426907905775,
+        "rmse_lift": 0.007384153187980232,
+        "p_value": 0.1765
+    },
+    "dl_quick_pressure": {
+        "n_samples": 110,
+        "baseline_r2": 0.2119482128008957,
+        "baseline_rmse": 0.012820704068142532,
+        "kinematic_r2": 0.19820945440417626,
+        "kinematic_rmse": 0.012931978147761947,
+        "rmse_lift": -0.00010827069913062051,
+        "p_value": 0.6585
+    },
+    "career_snaps": {
+        "n_samples": 510,
+        "baseline_r2": 0.0021394869928778038,
+        "baseline_rmse": 697.4128396684648,
+        "kinematic_r2": 0.05789336997696515,
+        "kinematic_rmse": 677.6493874925492,
+        "rmse_lift": 19.58312339449033,
+        "p_value": 0.001
+    }
+}

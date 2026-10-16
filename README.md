@@ -22,6 +22,8 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | SOTA Fine-Tuned Transformer (ELECTRA-Base) | F1-Score | **`1.00000`** | **#5 / 432 (Top 1.1% - Gold)** | 🚀 En competición |
 | 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Grandmaster Agent v11 Titan (Self-Play Evolved Pareto Champion) | Elo / Score | **`573.3`** | **Fase Final Evaluación** | 🚀 En competición |
 | 07 | [**RSNA Knee Abnormality Detection**](07_rsna_knee/) | Visión Médica & Transformers | DINOsaur V5 Final: Speedy Raptors v34 (DINOv2 + Rad + Raptor + 4xCoAtNet) | Macro ROC-AUC | **`0.94300`** | **#521 / 4.284 (Top 12%)** | 🚀 En competición |
+| 08 | [**Name That LLM**](08_name_that_llm/) | Atribución de Autoría NLP | SOTA Stylometric + N-Gram Multi-Engine Ensemble | Balanced Accuracy | **`OOF CV`** | **Lanzamiento Reciente** | 🚀 En competición |
+| 09 | [**NFL Big Data Bowl 2027**](09_nfl_big_data_bowl_2027/) | Sports Analytics & 10 Hz Tracking | CKTI Biomechanical Framework (KBE + RSI + Ridge/LGBM) | OOF R² / RMSE | **`R²: 0.1475 (p=0.001)`** | **Finalista Track / SOTA** | 🚀 En competición |
 
 ---
 
@@ -125,6 +127,30 @@ kaggle-portfolio/
         ├── evaluate.py             # Métrica oficial Macro ROC-AUC
         ├── model.py                # Clasificador multi-etiqueta con calibración
         └── submission.py           # Validador y generador de envíos oficiales
+│
+├── 08_name_that_llm/               # Name That LLM (Authorship Attribution entre 18 Frontier LLMs)
+│   ├── README.md                   # Documentación, auditoría estilométrica y métricas
+│   ├── download_data.py            # Descarga automatizada y caché
+│   ├── submission.parquet          # Archivo de predicción verificado para Kaggle
+│   └── src/
+│       ├── eda.py                  # Auditoría estilométrica y firmas lingüísticas
+│       ├── features.py             # Extracción de rasgos estilométricos y n-gramas
+│       ├── model.py                # 5-Fold StratifiedGroupKFold y ensamble multi-motor
+│       └── submit.py               # Generación y validación estricta de submission.parquet
+│
+└── 09_nfl_big_data_bowl_2027/       # NFL Big Data Bowl 2027 (Combine to NFL Performance)
+    ├── README.md                   # Documentación matemática, cinemática y resultados
+    ├── download_data.py            # Descarga automatizada y verificación de 6 datasets
+    ├── notebooks/
+    │   └── nfl_big_data_bowl_2027_solution.ipynb # Master Kaggle Notebook (<2,000 palabras, 7 figuras)
+    ├── eda_outputs/                # Visualizaciones editoriales y figuras de scouting
+    └── src/
+        ├── eda.py                  # Diagnóstico de ausentismo en Combine y correlaciones
+        ├── kinematics.py           # Motor cinemático 10 Hz (KBE, RSI, Bend, Jerk)
+        ├── nfl_performance.py      # Agregador de jugadas NGS a targets NFL (314k jugadas)
+        ├── models.py               # Benchmark 5-Fold CV, Ridge, LightGBM y Bootstrap
+        ├── visualization.py        # Generador de gráficos de analítica deportiva y radares
+        └── submission_generator.py # Constructor del Notebook oficial
 ```
 
 ---
