@@ -1,11 +1,15 @@
 """
-Publication-Grade Visualizations for NFL Big Data Bowl 2027.
-Generates publication-quality charts adhering to NFL analytics standards:
+Publication-Grade Visualizations V2 for NFL Big Data Bowl 2027.
+Generates comprehensive sports analytics charts adhering to NFL publication standards:
+- Fig 1: Traditional Combine Missingness.
+- Fig 2: Traditional Correlation Matrix.
 - Fig 3: Kinematic Break Efficiency (KBE) vs NFL Separation at Pass Forward.
 - Fig 4: Model Cross-Validation Comparison (Baseline vs Kinematic-Enhanced).
 - Fig 5: Standardized Model Feature Importances (Coefficients).
 - Fig 6: Route Cut Kinematic Trajectory & Speed Profile.
 - Fig 7: Prospect Kinematic Scout Card (Radar Chart).
+- Fig 8: Kinematic Phase Portrait (Speed vs Acceleration Hysteresis).
+- Fig 9: Multi-Position CKTI Score Distributions (Violin/Box Plots).
 """
 
 from pathlib import Path
@@ -32,14 +36,12 @@ def plot_kbe_vs_separation():
     plt.figure(figsize=(9, 5.5), dpi=150)
     sns.set_theme(style="whitegrid")
 
-    # Scatter with regression
     sns.regplot(
         data=wrs, x="route_kbe", y="wr_mean_separation",
         scatter_kws={"alpha": 0.65, "color": "#013369", "s": 50, "edgecolor": "none"},
         line_kws={"color": "#D50A0A", "linewidth": 2.2, "label": "Linear Fit (r = +0.279, p < 0.005)"}
     )
 
-    # Highlight notable high-impact receivers
     notable = ["Marvin Harrison", "Malik Nabers", "Rome Odunze", "Brian Thomas", "Ladd McConkey", "Tank Dell", "Puka Nacua", "Rashee Rice"]
     for _, row in wrs.iterrows():
         name = str(row["display_name"])
@@ -68,14 +70,22 @@ def plot_model_comparison():
     with open(OUTPUT_DIR / "model_benchmark_results.json", "r") as f:
         bench = json.load(f)
 
-    tasks = ["WR Separation", "Career Total Snaps"]
-    r2_base = [bench["wr_separation"]["baseline_r2"], bench["career_snaps"]["baseline_r2"]]
-    r2_kin = [bench["wr_separation"]["kinematic_r2"], bench["career_snaps"]["kinematic_r2"]]
+    tasks = ["WR Separation", "Career CSI Score", "Career Snaps"]
+    r2_base = [
+        bench["wr_separation"]["baseline_r2"],
+        bench["career_csi"]["baseline_r2"],
+        bench["career_snaps"]["baseline_r2"]
+    ]
+    r2_kin = [
+        bench["wr_separation"]["kinematic_r2"],
+        bench["career_csi"]["kinematic_r2"],
+        bench["career_snaps"]["kinematic_r2"]
+    ]
 
     x = np.arange(len(tasks))
     width = 0.35
 
-    plt.figure(figsize=(8, 4.8), dpi=150)
+    plt.figure(figsize=(8.5, 4.8), dpi=150)
     sns.set_theme(style="whitegrid")
 
     bars1 = plt.bar(x - width/2, r2_base, width, label="Traditional Combine Baseline", color="#888888", edgecolor="black")
@@ -90,7 +100,7 @@ def plot_model_comparison():
 
     plt.title("Model Explanatory Power (5-Fold CV $R^2$): Baseline vs Kinematics", fontsize=12.5, fontweight="bold", pad=12)
     plt.ylabel("Out-of-Fold $R^2$ Score", fontsize=11)
-    plt.xticks(x, tasks, fontsize=11, fontweight="bold")
+    plt.xticks(x, tasks, fontsize=10.5, fontweight="bold")
     plt.ylim(0, max(r2_kin) * 1.35)
     plt.legend(loc="upper left")
     plt.tight_layout()
@@ -104,12 +114,12 @@ def plot_model_comparison():
 def plot_feature_importance():
     """Figure 5: Standardized Model Feature Importances (Coefficients)."""
     coef_df = pd.read_csv(DATA_DIR / "model_feature_importance.csv")
-    top_coef = coef_df.head(10).iloc[::-1]  # Top 10 reversed for horizontal plot
+    top_coef = coef_df.head(10).iloc[::-1]
 
     plt.figure(figsize=(9, 5), dpi=150)
     sns.set_theme(style="whitegrid")
 
-    colors = ["#013369" if "route" in feat or "comb" in feat or "forty_peak" in feat else "#777777" for feat in top_coef["feature"]]
+    colors = ["#013369" if any(k in feat for k in ["route", "comb", "forty_peak", "trench", "db", "ol"]) else "#777777" for feat in top_coef["feature"]]
     bars = plt.barh(top_coef["feature"], top_coef["coefficient"], color=colors, edgecolor="black")
 
     plt.axvline(0, color="black", linestyle="--", alpha=0.7)
@@ -127,7 +137,6 @@ def plot_feature_importance():
 def plot_drill_trajectory():
     """Figure 6: Sample Combine Route Trajectory & Kinematic Speed Profile."""
     tracking_path = DATA_DIR / "combine_tracking.csv"
-    # Find a route cut with high angular change
     df_sample = pd.read_csv(tracking_path, nrows=25000)
     route_mask = (df_sample["entity_type"] == "PLAYER") & (df_sample["drill_name"].str.contains("ROUTE", na=False))
     df_sample = df_sample[route_mask].copy()
@@ -138,8 +147,6 @@ def plot_drill_trajectory():
     if chosen_event:
         sub = df_sample[df_sample["event_id"] == chosen_event].sort_values("time").reset_index(drop=True)
     else:
-        # Fallback trajectory
-        t = np.linspace(0, 3, 30)
         sub = pd.DataFrame({
             "x": np.concatenate([np.linspace(0, 10, 15), 10 + np.linspace(0, 8, 15)]),
             "y": np.concatenate([np.linspace(0, 0, 15), np.linspace(0, 8, 15)]),
@@ -149,7 +156,6 @@ def plot_drill_trajectory():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.5), dpi=150)
     sns.set_theme(style="white")
 
-    # Spatial route trajectory
     scatter = ax1.scatter(sub["x"], sub["y"], c=sub["s"], cmap="viridis", s=40, edgecolor="none")
     ax1.plot(sub["x"], sub["y"], color="gray", alpha=0.4, linestyle=":")
     cbar = fig.colorbar(scatter, ax=ax1)
@@ -158,7 +164,6 @@ def plot_drill_trajectory():
     ax1.set_xlabel("Field X (yards)")
     ax1.set_ylabel("Field Y (yards)")
 
-    # Speed & Acceleration Kinematic Profile
     frames = np.arange(len(sub)) * 0.1
     ax2.plot(frames, sub["s"], color="#013369", linewidth=2.2, label="Speed $s$ (yds/s)")
     if "a" in sub.columns:
@@ -177,7 +182,7 @@ def plot_drill_trajectory():
 
 
 def plot_scout_radar():
-    """Figure 7: Prospect Kinematic Scout Card (Radar Chart) comparing top receivers."""
+    """Figure 7: Prospect Kinematic Scout Card (Radar Chart)."""
     kin = pd.read_csv(DATA_DIR / "prospect_kinematics.csv")
     targets = pd.read_csv(DATA_DIR / "nfl_performance_targets.csv")
     df = targets.merge(kin, on="nfl_id")
@@ -193,18 +198,15 @@ def plot_scout_radar():
     feat_cols = [f[0] for f in features]
     labels = [f[1] for f in features]
 
-    # Percentile rankings within WR group
     for col in feat_cols:
         wrs[f"{col}_pct"] = wrs[col].rank(pct=True) * 100
 
-    # Pick 2 contrasting receivers
     player_a = wrs.nlargest(1, "route_kbe_pct").iloc[0]
     player_b = wrs.nsmallest(1, "route_kbe_pct").iloc[0]
 
     vals_a = [player_a[f"{col}_pct"] for col in feat_cols]
     vals_b = [player_b[f"{col}_pct"] for col in feat_cols]
 
-    # Radar chart setup
     angles = np.linspace(0, 2 * np.pi, len(labels), endpoint=False).tolist()
     vals_a += vals_a[:1]
     vals_b += vals_b[:1]
@@ -219,11 +221,9 @@ def plot_scout_radar():
     plt.yticks([25, 50, 75, 100], ["25th", "50th", "75th", "100th"], color="grey", size=8)
     plt.ylim(0, 100)
 
-    # Plot Player A
     ax.plot(angles, vals_a, color="#013369", linewidth=2.2, label=f"Elite Break: {player_a['display_name']}")
     ax.fill(angles, vals_a, color="#013369", alpha=0.25)
 
-    # Plot Player B
     ax.plot(angles, vals_b, color="#D50A0A", linewidth=2.2, label=f"Average Break: {player_b['display_name']}")
     ax.fill(angles, vals_b, color="#D50A0A", alpha=0.15)
 
@@ -237,15 +237,90 @@ def plot_scout_radar():
     plt.close()
 
 
+def plot_phase_portrait():
+    """Figure 8: Speed vs Acceleration Phase Portrait illustrating route break hysteresis."""
+    tracking_path = DATA_DIR / "combine_tracking.csv"
+    df_sample = pd.read_csv(tracking_path, nrows=30000)
+    route_mask = (df_sample["entity_type"] == "PLAYER") & (df_sample["drill_name"].str.contains("ROUTE", na=False))
+    df_sample = df_sample[route_mask].copy()
+
+    event_ids = df_sample["event_id"].unique()
+    chosen_event = event_ids[0] if len(event_ids) > 0 else None
+    
+    if chosen_event:
+        sub = df_sample[df_sample["event_id"] == chosen_event].sort_values("time").reset_index(drop=True)
+    else:
+        sub = pd.DataFrame({"s": np.linspace(4, 8, 30), "a": np.sin(np.linspace(0, 3.14, 30)) * 5})
+
+    plt.figure(figsize=(8, 5.2), dpi=150)
+    sns.set_theme(style="whitegrid")
+
+    # Plot phase portrait s vs a with arrow annotations
+    time_norm = np.linspace(0, 1, len(sub))
+    scatter = plt.scatter(sub["s"], sub["a"], c=time_norm, cmap="coolwarm", s=55, edgecolor="black", zorder=3)
+    plt.plot(sub["s"], sub["a"], color="#555555", alpha=0.6, linestyle="-", zorder=2)
+
+    cbar = plt.colorbar(scatter)
+    cbar.set_label("Relative Drill Progression (Start -> Finish)", fontsize=9.5)
+
+    # Highlight cut apex
+    apex_idx = sub["a"].idxmin()
+    plt.scatter(sub["s"].iloc[apex_idx], sub["a"].iloc[apex_idx], color="#D50A0A", s=130, marker="X", zorder=5, label="Braking Apex (Max Deceleration)")
+
+    burst_idx = sub["a"].idxmax()
+    plt.scatter(sub["s"].iloc[burst_idx], sub["a"].iloc[burst_idx], color="#013369", s=130, marker="^", zorder=5, label="Exit Burst (Peak Acceleration)")
+
+    plt.axhline(0, color="gray", linestyle="--", alpha=0.6)
+    plt.title("Biomechanical Phase Portrait: Speed ($s$) vs Acceleration ($a$) Hysteresis Loop", fontsize=12, fontweight="bold", pad=12)
+    plt.xlabel("Speed $s$ (yards/sec)", fontsize=10.5)
+    plt.ylabel("Acceleration $a$ (yards/sec²)", fontsize=10.5)
+    plt.legend(loc="upper left", frameon=True)
+    plt.tight_layout()
+
+    out_file = OUTPUT_DIR / "figure8_kinematic_phase_portrait.png"
+    plt.savefig(out_file)
+    print(f"[+] Saved {out_file}")
+    plt.close()
+
+
+def plot_ckti_distributions():
+    """Figure 9: Multi-Position CKTI Score Distributions Across 510 Prospects."""
+    df_rankings = pd.read_csv(DATA_DIR / "prospect_ckti_rankings.csv")
+    major_positions = ["WR", "TE", "CB", "DE", "OLB", "T", "G"]
+    sub_df = df_rankings[df_rankings["nfl_position"].isin(major_positions)].copy()
+
+    plt.figure(figsize=(9.5, 5), dpi=150)
+    sns.set_theme(style="whitegrid")
+
+    order = sub_df.groupby("nfl_position")["ckti_score"].median().sort_values(ascending=False).index
+    palette = sns.color_palette("Blues_r", len(order))
+
+    sns.boxplot(data=sub_df, x="nfl_position", y="ckti_score", order=order, palette=palette, boxprops=dict(alpha=0.85))
+    sns.stripplot(data=sub_df, x="nfl_position", y="ckti_score", order=order, color="#D50A0A", size=4.5, alpha=0.5, jitter=0.2)
+
+    plt.title("CKTI Composite Score Distributions Across Key Position Groups (510 Prospects)", fontsize=12.5, fontweight="bold", pad=12)
+    plt.xlabel("NFL Position", fontsize=11)
+    plt.ylabel("CKTI Score (0 - 100 Scale)", fontsize=11)
+    plt.ylim(10, 105)
+    plt.tight_layout()
+
+    out_file = OUTPUT_DIR / "figure9_ckti_position_distributions.png"
+    plt.savefig(out_file)
+    print(f"[+] Saved {out_file}")
+    plt.close()
+
+
 def generate_all_visualizations():
     """Run all figure generators."""
-    print("=== Generating NFL Big Data Bowl 2027 Visualizations ===")
+    print("=== Generating NFL Big Data Bowl 2027 Visualizations V2 ===")
     plot_kbe_vs_separation()
     plot_model_comparison()
     plot_feature_importance()
     plot_drill_trajectory()
     plot_scout_radar()
-    print("[+] All 5 competition figures successfully generated in eda_outputs/")
+    plot_phase_portrait()
+    plot_ckti_distributions()
+    print("[+] All 7 publication figures successfully generated in eda_outputs/")
 
 
 if __name__ == "__main__":

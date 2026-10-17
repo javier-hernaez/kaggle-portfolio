@@ -1,8 +1,8 @@
 """
-NFL Performance Target Aggregator for NFL Big Data Bowl 2027.
-Processes 314,000+ regular season plays from player_play.csv and career
-success records from player_career_successes.csv to create position-specific
-and career-level ground truth performance targets.
+NFL Performance Target Aggregator V2 for NFL Big Data Bowl 2027.
+Processes 314,000+ regular season plays and multi-season records across all
+five major position groups: WR, TE, DB, DL/EDGE, and OL, compiling the
+Career Success Index (CSI) and specialized on-field metrics.
 """
 
 from pathlib import Path
@@ -29,10 +29,7 @@ def load_play_data() -> pd.DataFrame:
 
 def aggregate_pass_catcher_metrics(df_plays: pd.DataFrame) -> pd.DataFrame:
     """Aggregate receiver separation, EPA per target, and YAC over expectation."""
-    # Filter to plays with routes or targets
     route_plays = df_plays[df_plays["route_ran"].notnull() | (df_plays["target"] == 1)].copy()
-    
-    # Calculate YAC above expectation where both exist
     route_plays["yac_oe"] = route_plays["yards_after_catch"] - route_plays["expected_yards_after_catch"]
 
     agg = route_plays.groupby("nfl_id").agg({
@@ -52,7 +49,6 @@ def aggregate_pass_catcher_metrics(df_plays: pd.DataFrame) -> pd.DataFrame:
 
 def aggregate_pass_rush_metrics(df_plays: pd.DataFrame) -> pd.DataFrame:
     """Aggregate edge/DL get-off, quick pressure rate, sacks, and TFLs."""
-    # Convert booleans or strings to numeric
     for col in ["quick_pressure", "sack", "tackle_for_loss"]:
         df_plays[col] = pd.to_numeric(df_plays[col], errors="coerce").fillna(0)
 
@@ -67,13 +63,31 @@ def aggregate_pass_rush_metrics(df_plays: pd.DataFrame) -> pd.DataFrame:
         "dl_quick_pressures", "dl_total_sacks", "dl_total_tfl"
     ]
     df_res = agg.reset_index()
-    # Rate of quick pressures per snap
     df_res["dl_quick_pressure_rate"] = df_res["dl_quick_pressures"] / df_res["dl_snap_count"].clip(lower=1)
     return df_res
 
 
+def aggregate_db_metrics(df_plays: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate defensive back closure and defensive play impact."""
+    db_plays = df_plays[df_plays["lined_up_position"].isin(["CB", "SS", "FS", "DB"])].copy()
+    if db_plays.empty:
+        return pd.DataFrame()
+
+    agg = db_plays.groupby("nfl_id").agg({
+        "separation_at_pass_forward": "mean",
+        "expected_points_added": "mean",
+        "tackle": "sum",
+        "play_id": "count"
+    })
+    agg.columns = [
+        "db_allowed_separation", "db_mean_epa_allowed",
+        "db_total_tackles", "db_total_coverage_snaps"
+    ]
+    return agg.reset_index()
+
+
 def aggregate_ol_metrics(df_plays: pd.DataFrame) -> pd.DataFrame:
-    """Aggregate offensive line pass-blocking pressure allowed metrics."""
+    """Aggregate offensive line pass-blocking efficiency."""
     ol_plays = df_plays[df_plays["pressure_allowed"].notnull()].copy()
     ol_plays["pressure_allowed"] = pd.to_numeric(ol_plays["pressure_allowed"], errors="coerce").fillna(0)
     ol_plays["sack_allowed"] = pd.to_numeric(ol_plays["sack_allowed"], errors="coerce").fillna(0)
@@ -86,11 +100,17 @@ def aggregate_ol_metrics(df_plays: pd.DataFrame) -> pd.DataFrame:
         "ol_pressure_allowed_rate", "ol_total_pressures_allowed",
         "ol_pass_block_snaps", "ol_sacks_allowed"
     ]
-    return agg.reset_index()
+    df_res = agg.reset_index()
+    # Pass Blocking Efficiency formula: 100 - (pressures + 2*sacks) / snaps * 100
+    df_res["ol_pass_blocking_efficiency"] = 100.0 - (
+        (df_res["ol_total_pressures_allowed"] + 2.0 * df_res["ol_sacks_allowed"]) /
+        df_res["ol_pass_block_snaps"].clip(lower=1) * 100.0
+    ).clip(lower=0, upper=100)
+    return df_res
 
 
 def load_career_metrics() -> pd.DataFrame:
-    """Load player_career_successes.csv and compute standardized career metrics."""
+    """Load player_career_successes.csv and compute standardized career metrics + CSI."""
     career = pd.read_csv(DATA_DIR / "player_career_successes.csv")
     career["career_total_snaps"] = career["career_offensive_snaps"] + career["career_defensive_snaps"]
     career["starter_rate"] = career["career_games_started"] / career["career_games_active"].clip(lower=1)
@@ -100,12 +120,18 @@ def load_career_metrics() -> pd.DataFrame:
         (career["ap_all_pro_2nd_team"] > 0) |
         (career["pro_bowl_original_ballot"] > 0)
     ).astype(int)
+
+    # Career Success Index (CSI): 0 - 100 scale composite
+    snap_pct = career["career_total_snaps"].rank(pct=True) * 40.0
+    start_pct = career["career_games_started"].rank(pct=True) * 40.0
+    honors_bonus = career["all_pro_or_pro_bowl"] * 20.0
+    career["career_success_index"] = (snap_pct + start_pct + honors_bonus).clip(0, 100)
     return career
 
 
 def build_performance_targets() -> pd.DataFrame:
     """Build unified multi-target ground truth dataset for all prospects."""
-    print("=== Aggregating NFL Performance Ground Truth Targets ===")
+    print("=== Aggregating NFL Performance Ground Truth Targets V2 ===")
     players = pd.read_csv(DATA_DIR / "players.csv")
     print(f"[*] Base prospects: {len(players)}")
 
@@ -118,10 +144,13 @@ def build_performance_targets() -> pd.DataFrame:
     print("[*] Aggregating pass-rush performance (Get-off, Quick Pressures, Sacks)...")
     dl_metrics = aggregate_pass_rush_metrics(df_plays)
 
-    print("[*] Aggregating offensive line protection performance...")
+    print("[*] Aggregating defensive back performance (Closure, EPA allowed)...")
+    db_metrics = aggregate_db_metrics(df_plays)
+
+    print("[*] Aggregating offensive line pass-blocking efficiency...")
     ol_metrics = aggregate_ol_metrics(df_plays)
 
-    print("[*] Loading career progression and starter rates...")
+    print("[*] Loading career progression, starter rates, and CSI...")
     career_metrics = load_career_metrics()
 
     # Merge everything onto players
@@ -129,6 +158,8 @@ def build_performance_targets() -> pd.DataFrame:
     df_targets = df_targets.merge(career_metrics, on="nfl_id", how="left")
     df_targets = df_targets.merge(wr_metrics, on="nfl_id", how="left")
     df_targets = df_targets.merge(dl_metrics, on="nfl_id", how="left")
+    if not db_metrics.empty:
+        df_targets = df_targets.merge(db_metrics, on="nfl_id", how="left")
     df_targets = df_targets.merge(ol_metrics, on="nfl_id", how="left")
 
     out_path = DATA_DIR / "nfl_performance_targets.csv"

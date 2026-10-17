@@ -1,0 +1,19 @@
+{
+  "id": "javierhernaez/nfl-big-data-bowl-2027-ckti-solution",
+  "title": "NFL Big Data Bowl 2027 CKTI Solution",
+  "code_file": "nfl_big_data_bowl_2027_solution.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": true,
+  "dataset_sources": [
+    "javierhernaez/nfl-bdb-2027-ckti-processed-data"
+  ],
+  "competition_sources": [
+    "nfl-big-data-bowl-2027"
+  ],
+  "kernel_sources": [],
+  "model_sources": []
+}
