@@ -1,5 +1,5 @@
 {
-  "id": "javierhernaez/name-that-llm-baseline-ensemble",
+  "id": "javierhernaez/name-that-llm-stylometric-baseline-ensemble",
   "title": "Name That LLM - Stylometric Baseline Ensemble",
   "code_file": "kaggle_submission_kernel.py",
   "language": "python",
@@ -13,7 +13,9 @@
     "text classification",
     "ensemble"
   ],
-  "dataset_sources": [],
+  "dataset_sources": [
+    "prvsiyan/prvsiyans-extended-name-that-llm-dataset"
+  ],
   "kernel_sources": [],
   "competition_sources": [
     "name-that-llm"

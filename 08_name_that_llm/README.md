@@ -83,7 +83,12 @@ Mediante el script exploratorio `src/eda.py` se identificaron firmas estilístic
 
 ### Componentes del Ensamble y Evolución:
 * **V1 Baseline (0.304 LB):** Logistic Regression + Calibrated Ridge + LightGBM sobre 32 métricas estilométricas y 85.000 n-gramas.
-* **V2 SOTA GPU Pipeline (0.642 LB Architecture):** Fusión de modelos decodificadores (Qwen3 / Qwen2.5 LoRAs), encoders (DeBERTa-v3, ELECTRA, UltraBERT), adaptadores ATLAS y lecturas espectrales centradas en prompt con derivación de firmas de autoría.
+* **V2 Augmented Multi-Scale Hungarian Ensemble (0.341 LB - Oficial Verificado en Leaderboard):**
+  * **Datos aumentados:** Fusión de `train.csv` (2.699) + `passages.csv` (8.549) de `prvsiyan/prvsiyans-extended-name-that-llm-dataset` -> **11.248 pasajes de entrenamiento balanceados**.
+  * **Representación multiescala:** 137.448 variables combinando n-gramas de caracteres (2 a 5) y de palabras (1 a 2) con sublinear TF.
+  * **Ensamble biproceso calibrado:** RidgeClassifier (alpha=2.5) calibrado con Softmax + SGDClassifier (log_loss, alpha=1e-5).
+  * **Clustering temático + Algoritmo Húngaro:** Agrupación jerárquica por distancia coseno (`fcluster`) y emparejamiento bipartito 1-a-1 estricto (`linear_sum_assignment`), garantizando que cada prompt tenga exactamente una predicción por modelo.
+  * **Rendimiento:** Ejecución completa en 1.7 minutos sin riesgo de cuelgues ni dependencias frágiles.
 
 ---
 

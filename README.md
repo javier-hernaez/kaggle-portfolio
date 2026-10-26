@@ -22,7 +22,7 @@ Repositório con soluciones, ingeniería de variables y modelos de Machine Learn
 | 05 | [**NLP with Disaster Tweets**](05_disaster_tweets/) | Clasificación de Texto (NLP) | SOTA Fine-Tuned Transformer (ELECTRA-Base) | F1-Score | **`1.00000`** | **#5 / 432 (Top 1.1% - Gold)** | 🚀 En competición |
 | 06 | [**Kaggriculture**](06_kaggriculture/) | Simulación y Estrategia Económica | Grandmaster Agent v11 Titan (Self-Play Evolved Pareto Champion) | Elo / Score | **`573.3`** | **Fase Final Evaluación** | 🚀 En competición |
 | 07 | [**RSNA Knee Abnormality Detection**](07_rsna_knee/) | Visión Médica & Transformers | DINOsaur V5 Final: Speedy Raptors v34 (DINOv2 + Rad + Raptor + 4xCoAtNet) | Macro ROC-AUC | **`0.94300`** | **#521 / 4.284 (Top 12%)** | 🚀 En competición |
-| 08 | [**Name That LLM**](08_name_that_llm/) | Atribución de Autoría NLP | SOTA LoRA Ensembles + Spectral Readouts (GPU V2) | Balanced Accuracy | **`0.304` (V1) / `0.642` (V2 SOTA)** | **Top Leaderboard Range** | 🚀 En competición |
+| 08 | [**Name That LLM**](08_name_that_llm/) | Atribución de Autoría NLP | Augmented Multi-Scale Hungarian Ensemble | Balanced Accuracy | **`0.341`** | **Top Leaderboard** | 🚀 En competición |
 | 09 | [**NFL Big Data Bowl 2027**](09_nfl_big_data_bowl_2027/) | Sports Analytics & 10 Hz Tracking | CKTI Biomechanical Framework (KBE + RSI + Ridge/LGBM) | OOF R² / RMSE | **`R²: 0.1475 (p=0.001)`** | **Finalista Track / SOTA** | 🚀 En competición |
 
 ---
