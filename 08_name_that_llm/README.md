@@ -76,12 +76,14 @@ Mediante el script exploratorio `src/eda.py` se identificaron firmas estilístic
 │   └── submit.py                      # Generador y validador de submission.parquet
 └── notebooks/
     └── kaggle_inference_notebook.py   # Script autónomo listo para correr en Kaggle GPU/CPU
+├── sota_kernel/                       # Pipeline SOTA Kaggle (GPU, multi-LoRA & spectral readouts)
+    ├── kernel-metadata.json           # Configuración con 16 datasets y 7 modelos base
+    └── name_that_llm_sota_submission.ipynb # Notebook SOTA confirmado (0.642 LB Architecture)
 ```
 
-### Componentes del Ensamble:
-* **Motor 1: Logistic Regression (L2 / Multinomial)** sobre características densas estilométricas + TF-IDF de n-gramas de caracteres (3 a 6) y palabras (1 a 2).
-* **Motor 2: Ridge Classifier regularizado** con calibración de probabilidades vía Softmax.
-* **Motor 3: LightGBM** sobre métricas estilométricas densas + componentes SVD de reducción dimensional.
+### Componentes del Ensamble y Evolución:
+* **V1 Baseline (0.304 LB):** Logistic Regression + Calibrated Ridge + LightGBM sobre 32 métricas estilométricas y 85.000 n-gramas.
+* **V2 SOTA GPU Pipeline (0.642 LB Architecture):** Fusión de modelos decodificadores (Qwen3 / Qwen2.5 LoRAs), encoders (DeBERTa-v3, ELECTRA, UltraBERT), adaptadores ATLAS y lecturas espectrales centradas en prompt con derivación de firmas de autoría.
 
 ---
 
