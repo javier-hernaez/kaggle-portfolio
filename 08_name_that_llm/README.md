@@ -88,7 +88,12 @@ Mediante el script exploratorio `src/eda.py` se identificaron firmas estilístic
   * **Representación multiescala:** 137.448 variables combinando n-gramas de caracteres (2 a 5) y de palabras (1 a 2) con sublinear TF.
   * **Ensamble biproceso calibrado:** RidgeClassifier (alpha=2.5) calibrado con Softmax + SGDClassifier (log_loss, alpha=1e-5).
   * **Clustering temático + Algoritmo Húngaro:** Agrupación jerárquica por distancia coseno (`fcluster`) y emparejamiento bipartito 1-a-1 estricto (`linear_sum_assignment`), garantizando que cada prompt tenga exactamente una predicción por modelo.
-  * **Rendimiento:** Ejecución completa en 1.7 minutos sin riesgo de cuelgues ni dependencias frágiles.
+* **V3 SOTA All-Public LoRA24 + Soft Sinkhorn + ATLAS Ensemble (~0.662 LB):**
+  * **Representación profunda multimodelo:** Extracción pooled de estados ocultos en capas intermedias [2, 4, 6, 8, 12, 16, 20, 24] mediante adaptadores LoRA24 de 2 etapas entrenados sobre Qwen3-14B, Qwen3-8B, Llama-3.1-8B, Qwen2.5-14B y DeBERTa-v3-large.
+  * **Transporte óptimo Soft Sinkhorn (`reg=0.45`, `target_mix=0.35`):** Sustituye la asignación rígida húngara de 18 clases (que degradaba -0.017 en test al contener solo 2-5 respuestas por prompt) por una regularización de entropía entrópica suave y adaptativa.
+  * **Probabilidad condicionada ATLAS 20%:** Re-puntuación por verosimilitud autor-fuente generativa guiada (arXiv 2610.19583) asignada dinámicamente con presupuesto de cómputo en GPU.
+  * **Protección tipográfica y gemelos centrados:** Filtros de spaced em-dashes (`—`) y gaussian twins para neutralizar firmas de formateo artificiales.
+  * **Robustez 100% pública:** Sustitución de dependencias privadas caídas por el modelo verificado `alexchilton/llama-3-1-8b-base` con `FAST_COMMIT` para guardado rápido y rerun completo en evaluación oculta (~4.000 filas).
 
 ---
 
