@@ -88,12 +88,16 @@ Mediante el script exploratorio `src/eda.py` se identificaron firmas estilístic
   * **Representación multiescala:** 137.448 variables combinando n-gramas de caracteres (2 a 5) y de palabras (1 a 2) con sublinear TF.
   * **Ensamble biproceso calibrado:** RidgeClassifier (alpha=2.5) calibrado con Softmax + SGDClassifier (log_loss, alpha=1e-5).
   * **Clustering temático + Algoritmo Húngaro:** Agrupación jerárquica por distancia coseno (`fcluster`) y emparejamiento bipartito 1-a-1 estricto (`linear_sum_assignment`), garantizando que cada prompt tenga exactamente una predicción por modelo.
-* **V3 SOTA All-Public LoRA24 + Soft Sinkhorn + ATLAS Ensemble (~0.662 LB):**
+* **V3 SOTA All-Public LoRA24 + Soft Sinkhorn + ATLAS Ensemble (0.662 LB - Verificado Oficialmente, Top 3.8% Mundial, Puesto 153 / 3.949):**
   * **Representación profunda multimodelo:** Extracción pooled de estados ocultos en capas intermedias [2, 4, 6, 8, 12, 16, 20, 24] mediante adaptadores LoRA24 de 2 etapas entrenados sobre Qwen3-14B, Qwen3-8B, Llama-3.1-8B, Qwen2.5-14B y DeBERTa-v3-large.
-  * **Transporte óptimo Soft Sinkhorn (`reg=0.45`, `target_mix=0.35`):** Sustituye la asignación rígida húngara de 18 clases (que degradaba -0.017 en test al contener solo 2-5 respuestas por prompt) por una regularización de entropía entrópica suave y adaptativa.
-  * **Probabilidad condicionada ATLAS 20%:** Re-puntuación por verosimilitud autor-fuente generativa guiada (arXiv 2610.19583) asignada dinámicamente con presupuesto de cómputo en GPU.
+  * **Transporte óptimo Soft Sinkhorn (`reg=0.45`, `target_mix=0.35`):** Sustituye la asignación rígida húngara de 18 clases por una regularización de entropía entrópica suave y adaptativa, evitando penalizar los clusters reducidos (2-5 respuestas) del test set.
+  * **Probabilidad condicionada ATLAS 20%:** Re-puntuación por verosimilitud autor-fuente generativa guiada (arXiv 2610.19583) asignada dinámicamente con presupuesto de cómputo en GPU sobre filas dudosas (`margin < 0.30`).
   * **Protección tipográfica y gemelos centrados:** Filtros de spaced em-dashes (`—`) y gaussian twins para neutralizar firmas de formateo artificiales.
-  * **Robustez 100% pública:** Sustitución de dependencias privadas caídas por el modelo verificado `alexchilton/llama-3-1-8b-base` con `FAST_COMMIT` para guardado rápido y rerun completo en evaluación oculta (~4.000 filas).
+* **V4 SOTA Apex: 6-Backbone LoRA + 20% ATLAS + Full-Text Qwen3.8-27B GSQ3 LoRA + 37-Marker Bayesian Typography:**
+  * **Clasificador Full-Text Qwen3.8-27B GSQ3 LoRA:** Integración de un modelo generativo frontera de 27B parámetros entrenado sobre el corpus ampliado de 119.899 pasajes públicos más 2 épocas sobre el conjunto oficial, asignando filas en paralelo a lo largo de 2 GPUs Nvidia Tesla T4 (`gsq_share = 0.10`).
+  * **Tipografía Bayesiana Jerárquica Beta-Bernoulli (37 marcadores):** Suavizado analítico de 37 firmas estilométricas deterministas (em-dash, comillas tipográficas, apóstrofes curvados, saltos de párrafo, marcadores de razonamiento) ponderadas por contraste de señal con filtros de longitud y cobertura para afinar la decisión en fronteras difusas.
+  * **Compuertas de Familia Condicionales:** Gating intrafamiliar en StyleGram y LoRA (Claude, GPT, Gemini, GLM) que reordena hermanos preservando la masa probabilística global de cada laboratorio.
+  * **Pipeline Robusto Multi-Mount:** Detección y reasignación automática de rutas de datasets en Kaggle evitando cuelgues o incompatibilidades de montaje en el test set oculto.
 
 ---
 
