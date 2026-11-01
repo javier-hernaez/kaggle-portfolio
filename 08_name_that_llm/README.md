@@ -93,12 +93,12 @@ Mediante el script exploratorio `src/eda.py` se identificaron firmas estilístic
   * **Transporte óptimo Soft Sinkhorn (`reg=0.45`, `target_mix=0.35`):** Sustituye la asignación rígida húngara de 18 clases por una regularización de entropía entrópica suave y adaptativa, evitando penalizar los clusters reducidos (2-5 respuestas) del test set.
   * **Probabilidad condicionada ATLAS 20%:** Re-puntuación por verosimilitud autor-fuente generativa guiada (arXiv 2610.19583) asignada dinámicamente con presupuesto de cómputo en GPU sobre filas dudosas (`margin < 0.30`).
   * **Protección tipográfica y gemelos centrados:** Filtros de spaced em-dashes (`—`) y gaussian twins para neutralizar firmas de formateo artificiales.
-* **V4 SOTA Apex: 6-Backbone LoRA + 20% ATLAS + Calibrated Beta-Bernoulli + Roman Tamrazov V40A Sibling-Style Residual (0.664 - 0.670+ LB Target):**
-  * **Eliminación de Máscaras Rígidas (`-1e9`):** La auditoría de errores demostró que penalizar rígidamente modelos por marcadores tipográficos (comillas tipográficas, em-dashes) degradaba el score cuando el prompt original contenía la marca y el LLM la repetía. Se eliminan las exclusiones duras en favor de un suavizado Bayesiano calibrado (`1.2`).
-  * **Tipografía Bayesiana Jerárquica Beta-Bernoulli Calibrada (37 marcadores):** Suavizado analítico de 37 firmas estilométricas deterministas ponderadas por contraste de señal con filtros de longitud y cobertura con factor de evidencia re-calibrado a `1.2` (evita sobrecorrección en textos cortos).
-  * **Residuo Estilístico Intrafamiliar V40A (`sibling_style.py`):** Modelo de regresión estilística OOF mediante 5-fold `GroupKFold` (agrupado por `prompt_id`) sobre las familias disputadas (`claude`, `gemini`, `gpt`, `glm`). Garantiza matemáticamente la conservación del 100% de la masa de probabilidad por proveedor (`logsumexp(out) == logsumexp(old)`), modulando únicamente la identidad de hermanos (`gate = np.clip((0.65 - margin) / 0.65, 0., 1.)`, `max_alpha = 0.08`).
-  * **Transporte Óptimo Soft Sinkhorn Calibrado (`reg = 0.60`, `target_mix = 0.35`):** Ajuste fino de la contracción marginal hacia la distribución a priori balanceada del test set.
-  * **Reserva de Seguridad (`candidate_reference_0660.parquet`):** Ejecución protegida bajo `try / except` que garantiza fallback automático al candidato base de 0.662+ ante cualquier inconsistencia en tiempo de ejecución.
+* **V5 SOTA Hyperparameter-Tuned Ensemble (0.664 LB Architecture):**
+  * **Lección Empírica sobre Puertas Intrafamiliares Superficiales:** La auditoría de la versión previa confirmó de manera concluyente que aplicar clasificadores lineales superficiales de recuento de puntuación (`sibling_style.py` sobre 40 marcas) degrada las probabilidades calculadas por la arquitectura profunda multimodelo LoRA24 (el score descendió a 0.657), validando el hallazgo documentado por Alex Chilton: *"shallow intra-family gates degrade deep multi-backbone representations"*.
+  * **Tipografía Bayesiana Suavizada (`1.2`):** Escala de verosimilitud de Bernoulli re-calibrada a `1.2` (en vez de `1.5`) para evitar sobreponderar signos aislados en textos cortos.
+  * **Eliminación Total de Máscaras Rígidas (`-1e9`):** Ningún modelo es descartado rígidamente ante la repetición de signos del prompt original.
+  * **Transporte Óptimo Soft Sinkhorn Calibrado (`reg = 0.60`, `target_mix = 0.35`):** Contracción marginal afinada directamente a la distribución uniforme del test set.
+  * **Parámetros ATLAS Likelihood Afinador:** `--atlas_w 0.20`, `--atlas_margin 0.3`.
 
 ---
 
