@@ -93,12 +93,12 @@ Mediante el script exploratorio `src/eda.py` se identificaron firmas estilístic
   * **Transporte óptimo Soft Sinkhorn (`reg=0.45`, `target_mix=0.35`):** Sustituye la asignación rígida húngara de 18 clases por una regularización de entropía entrópica suave y adaptativa, evitando penalizar los clusters reducidos (2-5 respuestas) del test set.
   * **Probabilidad condicionada ATLAS 20%:** Re-puntuación por verosimilitud autor-fuente generativa guiada (arXiv 2610.19583) asignada dinámicamente con presupuesto de cómputo en GPU sobre filas dudosas (`margin < 0.30`).
   * **Protección tipográfica y gemelos centrados:** Filtros de spaced em-dashes (`—`) y gaussian twins para neutralizar firmas de formateo artificiales.
-* **V5 SOTA Hyperparameter-Tuned Ensemble (0.664 LB Architecture):**
-  * **Lección Empírica sobre Puertas Intrafamiliares Superficiales:** La auditoría de la versión previa confirmó de manera concluyente que aplicar clasificadores lineales superficiales de recuento de puntuación (`sibling_style.py` sobre 40 marcas) degrada las probabilidades calculadas por la arquitectura profunda multimodelo LoRA24 (el score descendió a 0.657), validando el hallazgo documentado por Alex Chilton: *"shallow intra-family gates degrade deep multi-backbone representations"*.
-  * **Tipografía Bayesiana Suavizada (`1.2`):** Escala de verosimilitud de Bernoulli re-calibrada a `1.2` (en vez de `1.5`) para evitar sobreponderar signos aislados en textos cortos.
-  * **Eliminación Total de Máscaras Rígidas (`-1e9`):** Ningún modelo es descartado rígidamente ante la repetición de signos del prompt original.
-  * **Transporte Óptimo Soft Sinkhorn Calibrado (`reg = 0.60`, `target_mix = 0.35`):** Contracción marginal afinada directamente a la distribución uniforme del test set.
-  * **Parámetros ATLAS Likelihood Afinador:** `--atlas_w 0.20`, `--atlas_margin 0.3`.
+* **V6 SOTA Apex Architecture (Objetivo >0.664 LB):**
+  * **Eliminación de Distorsiones Superficiales y Máscaras Rígidas:** Confirmado empíricamente en el Leaderboard que los residuos lineales superficiales (`sibling_style.py`) y las máscaras duras (`-1e9`) penalizan pasajes legítimos. Se preservan puras las probabilidades de los 6 backbones neuronales.
+  * **Optimización de Tiempo GPU (`NTL_DROP_Q35 = '1'`):** Desactivación del miembro lento y ruidoso de atención de tokens Qwen3.5-9B en el stack complementario. Ahorra más de 2.5 horas de cómputo en GPU durante la inferencia del test set oculto y previene la degradación documentada por Alex Chilton (0.651 -> 0.640).
+  * **Máximo Presupuesto y Cobertura para ATLAS Likelihood:** Gracias al ahorro de tiempo de GPU, se amplía el presupuesto de cómputo para el re-scoring probabilístico guiado por verosimilitud autor-fuente (arXiv 2610.19583) con `--atlas_w 0.22` y umbral ampliado `--atlas_margin 0.32`.
+  * **Transporte Óptimo Soft Sinkhorn Calibrado (`reg = 0.45`, `target_mix = 0.35`):** Restaurado el punto dulce de contracción marginal balanceada sin sobreamortiguamiento.
+  * **Escala Bayesiana Plena (`1.5`):** Restablecido el factor de contraste tipográfico `1.5 * _evidence` que impulsó el récord previo de 0.662.
 
 ---
 
