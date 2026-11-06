@@ -93,12 +93,18 @@ Mediante el script exploratorio `src/eda.py` se identificaron firmas estilístic
   * **Transporte óptimo Soft Sinkhorn (`reg=0.45`, `target_mix=0.35`):** Sustituye la asignación rígida húngara de 18 clases por una regularización de entropía entrópica suave y adaptativa, evitando penalizar los clusters reducidos (2-5 respuestas) del test set.
   * **Probabilidad condicionada ATLAS 20%:** Re-puntuación por verosimilitud autor-fuente generativa guiada (arXiv 2610.19583) asignada dinámicamente con presupuesto de cómputo en GPU sobre filas dudosas (`margin < 0.30`).
   * **Protección tipográfica y gemelos centrados:** Filtros de spaced em-dashes (`—`) y gaussian twins para neutralizar firmas de formateo artificiales.
-* **V6 SOTA Apex Architecture (Objetivo >0.664 LB):**
+* **V6 SOTA Apex Architecture (0.663 LB - Verificado Oficialmente en Leaderboard, Envío ID: 57918245):**
   * **Eliminación de Distorsiones Superficiales y Máscaras Rígidas:** Confirmado empíricamente en el Leaderboard que los residuos lineales superficiales (`sibling_style.py`) y las máscaras duras (`-1e9`) penalizan pasajes legítimos. Se preservan puras las probabilidades de los 6 backbones neuronales.
   * **Optimización de Tiempo GPU (`NTL_DROP_Q35 = '1'`):** Desactivación del miembro lento y ruidoso de atención de tokens Qwen3.5-9B en el stack complementario. Ahorra más de 2.5 horas de cómputo en GPU durante la inferencia del test set oculto y previene la degradación documentada por Alex Chilton (0.651 -> 0.640).
   * **Máximo Presupuesto y Cobertura para ATLAS Likelihood:** Gracias al ahorro de tiempo de GPU, se amplía el presupuesto de cómputo para el re-scoring probabilístico guiado por verosimilitud autor-fuente (arXiv 2610.19583) con `--atlas_w 0.22` y umbral ampliado `--atlas_margin 0.32`.
   * **Transporte Óptimo Soft Sinkhorn Calibrado (`reg = 0.45`, `target_mix = 0.35`):** Restaurado el punto dulce de contracción marginal balanceada sin sobreamortiguamiento.
-  * **Escala Bayesiana Plena (`1.5`):** Restablecido el factor de contraste tipográfico `1.5 * _evidence` que impulsó el récord previo de 0.662.
+  * **Escala Bayesiana Plena (`1.5`):** Restablecido el factor de contraste tipográfico `1.5 * _evidence` que impulsó la subida de score a 0.663.
+* **V7 SOTA 0.669 Apex Ensemble (Arquitectura SOTA Noviembre 2026 - Objetivo 0.669-0.672 LB):**
+  * **Tri-Adapter Qwen3-14B Blend (`n14b_proven`):** Fusión ponderada tri-adaptador `[0.34, 0.33, 0.33]` del checkpoint base de Nishant Dahal con los adaptadores de vanguardia de ozertuu `OQ1` (`nuridudak/ntl-q14-lora`) y `OQ4` (`nuridudak/ntl-q14-lora-v4`).
+  * **Dual-SVC Calibrated Blend:** Fusión calibrada de soporte vectorial combinando el pool pre-ajustado (`nuridudak/ntl-svc-prefit-pool-v4n`, peso `0.85`) con el pool abierto tipográfico (`svc_w = 12.0`).
+  * **Pairwise Identity Verifier V34.1 (`v34_pairwise.py`):** Verificador ligero basado en evidencia de pares de modelos y estructuras de prompts (`mercurydust/ntllm-chatgpt-a-b`, revisión 03) con corrección probabilística suave (`top34_w = 0.15`).
+  * **Hiperparámetros de Transporte Óptimo Calibrados:** `sinkhorn = 0.42`, `sinkhorn_target_mix = 0.35`, con `atlas_w = 0.22` y `atlas_margin = 0.36`.
+  * **Garantía Fail-Safe de Integridad (Cell 5):** Validación estricta en el commit de la existencia de las 17 fuentes de datos montadas, manifiesto A/B rev-03, open pool parquet y bundle ATLAS.
 
 ---
 
