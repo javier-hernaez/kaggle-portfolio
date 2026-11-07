@@ -99,12 +99,17 @@ Mediante el script exploratorio `src/eda.py` se identificaron firmas estilístic
   * **Máximo Presupuesto y Cobertura para ATLAS Likelihood:** Gracias al ahorro de tiempo de GPU, se amplía el presupuesto de cómputo para el re-scoring probabilístico guiado por verosimilitud autor-fuente (arXiv 2610.19583) con `--atlas_w 0.22` y umbral ampliado `--atlas_margin 0.32`.
   * **Transporte Óptimo Soft Sinkhorn Calibrado (`reg = 0.45`, `target_mix = 0.35`):** Restaurado el punto dulce de contracción marginal balanceada sin sobreamortiguamiento.
   * **Escala Bayesiana Plena (`1.5`):** Restablecido el factor de contraste tipográfico `1.5 * _evidence` que impulsó la subida de score a 0.663.
-* **V7 SOTA 0.669 Apex Ensemble (Arquitectura SOTA Noviembre 2026 - Objetivo 0.669-0.672 LB):**
+* **V7 SOTA 0.669 Apex Ensemble (0.669 LB - Verificado Oficialmente en Leaderboard, Envío ID: 58065185):**
   * **Tri-Adapter Qwen3-14B Blend (`n14b_proven`):** Fusión ponderada tri-adaptador `[0.34, 0.33, 0.33]` del checkpoint base de Nishant Dahal con los adaptadores de vanguardia de ozertuu `OQ1` (`nuridudak/ntl-q14-lora`) y `OQ4` (`nuridudak/ntl-q14-lora-v4`).
   * **Dual-SVC Calibrated Blend:** Fusión calibrada de soporte vectorial combinando el pool pre-ajustado (`nuridudak/ntl-svc-prefit-pool-v4n`, peso `0.85`) con el pool abierto tipográfico (`svc_w = 12.0`).
   * **Pairwise Identity Verifier V34.1 (`v34_pairwise.py`):** Verificador ligero basado en evidencia de pares de modelos y estructuras de prompts (`mercurydust/ntllm-chatgpt-a-b`, revisión 03) con corrección probabilística suave (`top34_w = 0.15`).
   * **Hiperparámetros de Transporte Óptimo Calibrados:** `sinkhorn = 0.42`, `sinkhorn_target_mix = 0.35`, con `atlas_w = 0.22` y `atlas_margin = 0.36`.
-  * **Garantía Fail-Safe de Integridad (Cell 5):** Validación estricta en el commit de la existencia de las 17 fuentes de datos montadas, manifiesto A/B rev-03, open pool parquet y bundle ATLAS.
+  * **Resultado Oficial:** Confirmó empíricamente un récord de **0.669 Balanced Accuracy** en el test set oculto de la competición.
+* **V8 SOTA 0.670+ Sovereign Architecture (Arquitectura SOTA Noviembre 2026 - Objetivo 0.670-0.673 LB):**
+  * **Slot de Clasificación Secuencial DeBERTa-v3 (`deb_v3_cls`):** Integración directa del clasificador de secuencias fine-tuned de 18 clases (`nuridudak/ntl-two-stage-encoders`, carpeta `desklib`, longitud 384) con peso de slot principal `w = 2.2` y loader mapeado a las etiquetas del pipeline.
+  * **Rebalanceo Empírico NTL-20:** Ponderación calibrada de SVM sobre n-gramas (`--svc_w 4.0` en pool abierto, `--ours_svc_w 6.0` en pool pre-ajustado) y temperatura de transporte óptimo suavizada (`--sinkhorn 0.30`, `--sinkhorn_target_mix 0.35`).
+  * **Likelihood Condicionado ATLAS Calibrado:** `--atlas_w 0.20` con margen de disputa `--atlas_margin 0.32`.
+  * **Pila Comunitaria de 20 Datasets Públicos:** Incorpora proxies libres, generaciones adicionales y comprobación rigurosa de integridad mediante aserciones estrictas en Cell 5.
 
 ---
 

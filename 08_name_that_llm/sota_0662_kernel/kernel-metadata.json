@@ -1,6 +1,6 @@
 {
-  "id": "javierhernaez/name-that-llm-sota-0669-ensemble",
-  "title": "Name That LLM - SOTA 0669 Ensemble",
+  "id": "javierhernaez/name-that-llm-sota-0670-ensemble",
+  "title": "Name That LLM - SOTA 0670 Ensemble",
   "code_file": "name_that_llm_sota_0662.ipynb",
   "language": "python",
   "kernel_type": "notebook",
@@ -14,15 +14,18 @@
   "dataset_sources": [
     "dhruvtibarewal/nlm-l24-adapters",
     "crtproduction/name-that-llm-open-pool",
-    "melvindenishl/ntl-open-pool-v13-snapshot",
     "seyitkaangunes/ntl-extra-api-passages",
+    "abdullah1afify/ntl-generations",
+    "dophuchung/ntl-proxy-generations",
     "zbigniewkirchner/ntl-qwen3-8b-lora-claude-head",
     "dhruvtibarewal/nlm-matched-clean",
     "dhruvtibarewal/nlm-offline-wheels",
     "josephadamski91/ntl-atlas-qwen3-8b-v1",
+    "lucasboesen/ntl-free-proxy-generations",
     "nuridudak/ntl-q14-lora",
     "nuridudak/ntl-q14-lora-v4",
     "nuridudak/ntl-svc-prefit-pool-v4n",
+    "nuridudak/ntl-two-stage-encoders",
     "nishantdahal/ntl-two-stage-lora",
     "nishantdahal/ntl-handwriting-blend",
     "dhruvtibarewal/nlm-l24-adapters-v5",
@@ -45,14 +48,14 @@
   ],
   "model_sources": [
     "alexchilton/llama-3-1-8b-base/Transformers/default/1",
-    "qwen-lm/qwen-3/Transformers/14b-base/1",
     "qwen-lm/qwen-3/Transformers/8b/1",
-    "qwen-lm/qwen-3/Transformers/8b-base/1",
+    "qwen-lm/qwen-3/Transformers/14b-base/1",
     "qwen-lm/qwen-3/Transformers/14b/1",
     "qwen-lm/qwen-3/Transformers/4b-base/1",
+    "qwen-lm/qwen-3/Transformers/8b-base/1",
     "qwen-lm/qwen2.5/Transformers/7b/1",
     "qwen-lm/qwen2.5/Transformers/14b/1"
   ],
-  "docker_image": "gcr.io/kaggle-private-byod/python@sha256:2757e0c7d1e0a9cb43da657b97e223c321a98f5014bdf64f44f2f6b083ad2b2f",
+  "docker_image": "gcr.io/kaggle-private-byod/python@sha256:de153e6d303881930c51286216393d56f56b26458d0661350305a1e8144eea01",
   "machine_shape": "NvidiaTeslaT4"
 }
