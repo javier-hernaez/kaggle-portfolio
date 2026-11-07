@@ -55,7 +55,5 @@
     "qwen-lm/qwen-3/Transformers/8b-base/1",
     "qwen-lm/qwen2.5/Transformers/7b/1",
     "qwen-lm/qwen2.5/Transformers/14b/1"
-  ],
-  "docker_image": "gcr.io/kaggle-private-byod/python@sha256:de153e6d303881930c51286216393d56f56b26458d0661350305a1e8144eea01",
-  "machine_shape": "NvidiaTeslaT4"
+  ]
 }
