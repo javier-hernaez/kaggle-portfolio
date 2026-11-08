@@ -115,6 +115,12 @@ Mediante el script exploratorio `src/eda.py` se identificaron firmas estilístic
   * **Fusión Geométrica con Pila Parental Ponderada (Cuota 60%):** Combina el clasificador de pasaje completo Qwen3.8-27B GSQ3 (cuota 3%), los lectores profundos LoRA24, las cabezas pre-ajustadas sobre Open Pool (`ntl660` y `ntl666`) y la probabilidad guiada ATLAS (10%).
   * **Fast Preview Gate de Cero Latencia:** Generación instantánea del fixture público en el commit (<60s) con ejecución íntegra del pipeline multimodelo en el test set oculto.
   * **Pila de 21 Datasets Públicos Verificados:** Integración de activos de inferencia nativos de OLMo2/Native24 (`lightningv08`), cabezas espectrales (`kirilltym`) y checkpoints safetensors.
+* **V10 SOTA Apex Ensemble (0.673 Lineage: DeBERTa-v3 Slot + Wired-In 25-Fold Top-34 LightGBM Head, Objetivo 0.673-0.675 LB):**
+  * **Resolución del Cuello de Botella Top-34:** En las versiones 0.670 y anteriores, `--top34_w 0.15` se omitía porque el código buscaba un inexistente `top34.lgb`, mientras que `nuridudak/ntl-svc-prefit-pool-v4n` aloja 25 modelos LightGBM por pliegues (`top34_f*_s*.txt`). Se cableó el promediado de los 25 modelos sobre 16 variables estadísticas de tokens (tiktoken `o200k_base`, covarianza de autovalores, marcadores discursivos y puntuación).
+  * **Slot de Clasificación Secuencial DeBERTa-v3 (`w = 2.2`):** Clasificador de secuencias de 18 clases (`desklib` de `nuridudak/ntl-two-stage-encoders`, max_len=384).
+  * **Dual-SVC y Verificador de Pares:** Super-SVC V5 / OSVC4N (`ours_svc_w = 6.0`), Open-Pool SVC (`svc_w = 4.0`) y Verificador A/B V34.1 sobre `mercurydust/ntllm-chatgpt-a-b` rev-03.
+  * **Transporte Óptimo Soft Sinkhorn & ATLAS:** `reg = 0.30`, `target_mix = 0.35`, con verosimilitud autor-fuente guiada por GPU (`atlas_w = 0.20`, `atlas_margin = 0.32`).
+
 
 ---
 
