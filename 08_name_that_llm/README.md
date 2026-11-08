@@ -105,11 +105,16 @@ Mediante el script exploratorio `src/eda.py` se identificaron firmas estilístic
   * **Pairwise Identity Verifier V34.1 (`v34_pairwise.py`):** Verificador ligero basado en evidencia de pares de modelos y estructuras de prompts (`mercurydust/ntllm-chatgpt-a-b`, revisión 03) con corrección probabilística suave (`top34_w = 0.15`).
   * **Hiperparámetros de Transporte Óptimo Calibrados:** `sinkhorn = 0.42`, `sinkhorn_target_mix = 0.35`, con `atlas_w = 0.22` y `atlas_margin = 0.36`.
   * **Resultado Oficial:** Confirmó empíricamente un récord de **0.669 Balanced Accuracy** en el test set oculto de la competición.
-* **V8 SOTA 0.670+ Sovereign Architecture (Arquitectura SOTA Noviembre 2026 - Objetivo 0.670-0.673 LB):**
+* **V8 SOTA 0.670+ Sovereign Architecture (0.670 LB - Verificado Oficialmente en Leaderboard, Envío ID: 58095584):**
   * **Slot de Clasificación Secuencial DeBERTa-v3 (`deb_v3_cls`):** Integración directa del clasificador de secuencias fine-tuned de 18 clases (`nuridudak/ntl-two-stage-encoders`, carpeta `desklib`, longitud 384) con peso de slot principal `w = 2.2` y loader mapeado a las etiquetas del pipeline.
   * **Rebalanceo Empírico NTL-20:** Ponderación calibrada de SVM sobre n-gramas (`--svc_w 4.0` en pool abierto, `--ours_svc_w 6.0` en pool pre-ajustado) y temperatura de transporte óptimo suavizada (`--sinkhorn 0.30`, `--sinkhorn_target_mix 0.35`).
   * **Likelihood Condicionado ATLAS Calibrado:** `--atlas_w 0.20` con margen de disputa `--atlas_margin 0.32`.
-  * **Pila Comunitaria de 20 Datasets Públicos:** Incorpora proxies libres, generaciones adicionales y comprobación rigurosa de integridad mediante aserciones estrictas en Cell 5.
+  * **Resultado Oficial:** Confirmó un nuevo récord de **0.670 Balanced Accuracy** en el test set oculto.
+* **V9 SOTA 0.680 Lightning-Native Architecture (Arquitectura SOTA Noviembre 2026 - Objetivo 0.679-0.680+ LB):**
+  * **Experto Nativo Qwen3-Embedding-8B (5-Fold Multi-Depth, Cuota 40%):** Implementación de la arquitectura de CHEN Han (.679 notebook) empleando las 36 capas completas de `qwen-lm/qwen-3-embedding/Transformers/8b/1`, normalización aprendida a 8 profundidades y ventanas cubrientes de 512 tokens divididas sobre ambas GPUs T4.
+  * **Fusión Geométrica con Pila Parental Ponderada (Cuota 60%):** Combina el clasificador de pasaje completo Qwen3.8-27B GSQ3 (cuota 3%), los lectores profundos LoRA24, las cabezas pre-ajustadas sobre Open Pool (`ntl660` y `ntl666`) y la probabilidad guiada ATLAS (10%).
+  * **Fast Preview Gate de Cero Latencia:** Generación instantánea del fixture público en el commit (<60s) con ejecución íntegra del pipeline multimodelo en el test set oculto.
+  * **Pila de 21 Datasets Públicos Verificados:** Integración de activos de inferencia nativos de OLMo2/Native24 (`lightningv08`), cabezas espectrales (`kirilltym`) y checkpoints safetensors.
 
 ---
 
